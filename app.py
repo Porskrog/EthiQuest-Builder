@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from random import choice 
 
 app = Flask(__name__)
 CORS(app)
@@ -93,6 +94,31 @@ def get_options(DilemmaID):
         output.append(option_data)
 
     return jsonify({'options': output})
+
+@app.route('/get_random_dilemma', methods=['GET'])
+def get_random_dilemma():
+    all_dilemmas = Dilemma.query.all()
+    
+    if not all_dilemmas:
+        return jsonify({'message': 'No dilemmas available'}), 404
+    
+    selected_dilemma = choice(all_dilemmas)
+    options = Option.query.filter_by(DilemmaID=selected_dilemma.id).all()
+
+    dilemma_data = {
+        'id': selected_dilemma.id,
+        'question': selected_dilemma.question,
+        'options': [
+            {
+                'id': option.id,
+                'text': option.text,
+                'pros': option.pros,
+                'cons': option.cons
+            } for option in options
+        ]
+    }
+
+    return jsonify({'dilemma': dilemma_data})
 
 @app.route('/')
 def hello_world():
