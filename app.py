@@ -49,10 +49,19 @@ def get_dilemmas():
         dilemma_data = {}
         dilemma_data['id'] = dilemma.id
         dilemma_data['question'] = dilemma.question
-        dilemma_data['options'] = []
-        for option in dilemma.options:
-            option_data = {'text': option.text, 'pros': option.pros, 'cons': option.cons}
-            dilemma_data['options'].append(option_data)
+
+        options = Option.query.filter_by(DilemmaID=dilemma.id).all()
+        options_list = []
+
+        for option in options:
+            option_data = {}
+            option_data['id'] = option.id
+            option_data['text'] = option.text
+            option_data['pros'] = option.pros
+            option_data['cons'] = option.cons
+            options_list.append(option_data)
+
+        dilemma_data['options'] = options_list
         output.append(dilemma_data)
 
     return jsonify({'dilemmas': output})
