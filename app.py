@@ -49,6 +49,10 @@ def get_dilemmas():
         dilemma_data = {}
         dilemma_data['id'] = dilemma.id
         dilemma_data['question'] = dilemma.question
+        dilemma_data['options'] = []
+        for option in dilemma.options:
+            option_data = {'text': option.text, 'pros': option.pros, 'cons': option.cons}
+            dilemma_data['options'].append(option_data)
         output.append(dilemma_data)
 
     return jsonify({'dilemmas': output})
