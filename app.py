@@ -120,6 +120,21 @@ def get_random_dilemma():
 
     return jsonify({'dilemma': dilemma_data})
 
+@app.route('/get_option_details/<OptionID>', methods=['GET'])
+def get_option_details(OptionID):
+    option = Option.query.filter_by(id=OptionID).first()
+    if not option:
+        return jsonify({'message': 'Option not found'}), 404
+
+    option_data = {
+        'id': option.id,
+        'text': option.text,
+        'pros': option.pros,
+        'cons': option.cons
+    }
+
+    return jsonify({'option': option_data})
+
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
