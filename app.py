@@ -163,6 +163,31 @@ def get_option_details(OptionID):
 
     return jsonify({'option': option_data})
 
+# Store user's choice
+@app.route('/store_user_choice', methods=['POST'])
+def store_user_choice():
+    data = request.get_json()
+    cookie_id = data['cookie_id']
+    option_id = data['option_id']
+
+    # Check if user exists
+    user = User.query.filter_by(cookie_id=cookie_id).first()
+    
+    # If user doesn't exist, create a new user
+    if not user:
+        new_user = User(cookie_id=cookie_id)
+        db.session.add(new_user)
+        db.session.commit()
+        user = new_user
+
+    # Store the user's choice
+    new_choice = UserChoice(option_id=option_id, user_id=user.id)
+    db.session.add(new_choice)
+    db.session.commit()
+
+    return jsonify({'message': 'User choice stored successfully'}), 200
+
+
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
