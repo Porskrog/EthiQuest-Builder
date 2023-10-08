@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_cors import CORS
 from random import choice 
 from datetime import datetime
 
+# Initialize your Flask app here
 app = Flask(__name__)
 CORS(app)
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
 
 # Database configurationm  -- new comment
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flow_camp:ghRta9wBEkr2@mysql28.unoeuro.com:3306/flow_camp_db'
