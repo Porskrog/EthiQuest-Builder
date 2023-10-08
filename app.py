@@ -9,8 +9,17 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)
 
+# Switch to testing mode (This is for demonstration; normally, you'd set this in your test setup)
+app.config['TESTING'] = False
+
+# Check if the app is in test mode
+if app.config.get('TESTING'):
+    app.config.from_pyfile('test_config.py')
+else:
+    # Your existing production/staging database URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flow_camp:ghRta9wBEkr2@mysql28.unoeuro.com:3306/flow_camp_db'
+
 # Database configurationm  -- new comment
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flow_camp:ghRta9wBEkr2@mysql28.unoeuro.com:3306/flow_camp_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
 
 # Initialize the database
@@ -174,14 +183,42 @@ def get_options(DilemmaID):
 
     return jsonify({'options': output})
 
-@app.route('/get_random_dilemma', methods=['GET'])
+@app.route('/get_random_dilemma', methods=['POST'])  # Changed to POST to get user details
 def get_random_dilemma():
+    data = request.get_json()
+    cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
+    
+    # Fetch the user from the database
+    user = User.query.filter_by(cookie_id=cookie_id).first()
+    
+    # If user doesn't exist, create a new user
+    if not user:
+        new_user = User(cookie_id=cookie_id)
+        db.session.add(new_user)
+        db.session.commit()
+        user = new_user
+    
+    # Get the list of viewed dilemmas for this user
+    viewed_dilemmas = get_viewed_dilemmas(user.id)
+    
+    # Get all dilemmas from the database
     all_dilemmas = Dilemma.query.all()
     
-    if not all_dilemmas:
-        return jsonify({'message': 'No dilemmas available'}), 404
+    # Filter out the viewed dilemmas
+    unviewed_dilemmas = [d for d in all_dilemmas if d.id not in viewed_dilemmas]
     
-    selected_dilemma = choice(all_dilemmas)
+    # If there are no unviewed dilemmas, handle that case
+    if not unviewed_dilemmas:
+        return jsonify({"message": "No new dilemmas available"}), 404
+    
+    # Pick a random dilemma from the unviewed dilemmas
+    selected_dilemma = choice(unviewed_dilemmas)
+    
+    # Add an entry to the ViewedDilemmas table
+    new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
+    db.session.add(new_view)
+    db.session.commit()
+
     options = Option.query.filter_by(DilemmaID=selected_dilemma.id).all()
 
     dilemma_data = {
@@ -196,8 +233,9 @@ def get_random_dilemma():
             } for option in options
         ]
     }
-
+    
     return jsonify({'dilemma': dilemma_data})
+
 
 @app.route('/get_option_details/<OptionID>', methods=['GET'])
 def get_option_details(OptionID):
