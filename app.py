@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from random import choice 
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -33,20 +34,29 @@ class Option(db.Model):
     # Relationship to the Dilemmas table
     dilemma = db.relationship('Dilemma', back_populates='options')
 
-# New Users table
+# Combined User table
 class User(db.Model):
     __tablename__ = 'Users'
-    UserID = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # Auto-incrementing ID
+    UserID = db.Column(db.String(50), unique=True)  # For registered users
+    cookie_id = db.Column(db.String(100), unique=True, nullable=True)  # For anonymous users
     LastVisit = db.Column(db.DateTime, default=datetime.utcnow)
 
-# New UserChoices table
+    # Relationship to UserChoices
+    choices = db.relationship('UserChoice', back_populates='user')
+
+# UserChoices table
 class UserChoice(db.Model):
     __tablename__ = 'UserChoices'
     ChoiceID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    UserID = db.Column(db.String(50), db.ForeignKey('Users.UserID'))
+    UserID = db.Column(db.Integer, db.ForeignKey('Users.id'))
     DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'))
     OptionID = db.Column(db.Integer, db.ForeignKey('Options.id'))
     Timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = db.relationship('User', back_populates='choices')
+    option = db.relationship('Option') 
 
 # End of Database tables
 
