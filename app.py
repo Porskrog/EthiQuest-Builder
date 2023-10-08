@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
 # Initialize the database
 db = SQLAlchemy(app)
 
-# Add these lines for the Dilemma and Option models
+# Database tables for the Dilemma, Option, Users, UerChoices
 class Dilemma(db.Model):
     __tablename__ = 'Dilemmas'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,6 +32,24 @@ class Option(db.Model):
 
     # Relationship to the Dilemmas table
     dilemma = db.relationship('Dilemma', back_populates='options')
+
+# New Users table
+class User(db.Model):
+    __tablename__ = 'Users'
+    UserID = db.Column(db.String(50), primary_key=True)
+    LastVisit = db.Column(db.DateTime, default=datetime.utcnow)
+
+# New UserChoices table
+class UserChoice(db.Model):
+    __tablename__ = 'UserChoices'
+    ChoiceID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    UserID = db.Column(db.String(50), db.ForeignKey('Users.UserID'))
+    DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'))
+    OptionID = db.Column(db.Integer, db.ForeignKey('Options.id'))
+    Timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+# End of Database tables
+
 
 @app.route('/add_dilemma', methods=['POST'])
 def add_dilemma():
