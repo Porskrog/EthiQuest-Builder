@@ -60,7 +60,8 @@ class UserChoice(db.Model):
     user = db.relationship('User', back_populates='choices')
     option = db.relationship('Option') 
 
-    class ViewedDilemma(db.Model):
+# Veiwed Dilemmas table 
+class ViewedDilemma(db.Model):
     __tablename__ = 'ViewedDilemmas'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id'))
