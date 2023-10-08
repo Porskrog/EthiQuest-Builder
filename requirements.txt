@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 pymysql==1.1.0
 gunicorn
 Flask-CORS
+Flask-Migrate
