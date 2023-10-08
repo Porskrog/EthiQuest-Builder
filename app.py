@@ -19,7 +19,9 @@ db = SQLAlchemy(app)
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
-# Database tables for the Dilemma, Option, Users, UerChoices
+################################################################################
+# Database tables for the Dilemma, Option, Users, UserChoices, ViewedDilemmas  #
+################################################################################
 class Dilemma(db.Model):
     __tablename__ = 'Dilemmas'
     id = db.Column(db.Integer, primary_key=True)
@@ -80,12 +82,35 @@ class ViewedDilemma(db.Model):
 
 # End of Database tables
 
+########################
+# Utility Functions    #
+########################
 
 # Function to get viewed dilemmas for a user
 def get_viewed_dilemmas(user_id):
     viewed_dilemmas = ViewedDilemma.query.filter_by(user_id=user_id).all()
     viewed_dilemma_ids = [dilemma.dilemma_id for dilemma in viewed_dilemmas]
     return viewed_dilemma_ids
+
+#####################
+# Route Handlers    #
+#####################
+@app.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
+def view_dilemma(dilemma_id):
+    user_id = request.json.get('user_id')  # Replace this with actual logic to get user_id
+
+    # Check if this dilemma has been viewed by this user before
+    viewed = ViewedDilemma.query.filter_by(user_id=user_id, dilemma_id=dilemma_id).first()
+    if viewed:
+        return jsonify({"message": "Dilemma has been viewed before by this user"}), 200
+
+    # If not viewed, add to the ViewedDilemmas table
+    new_view = ViewedDilemma(user_id=user_id, dilemma_id=dilemma_id)
+    db.session.add(new_view)
+    db.session.commit()
+    
+    return jsonify({"message": "Dilemma marked as viewed"}), 201
+
 
 @app.route('/add_dilemma', methods=['POST'])
 def add_dilemma():
