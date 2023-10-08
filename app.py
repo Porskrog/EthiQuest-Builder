@@ -6,7 +6,7 @@ from random import choice
 app = Flask(__name__)
 CORS(app)
 
-# Database configuration
+# Database configurationm  -- new comment
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flow_camp:ghRta9wBEkr2@mysql28.unoeuro.com:3306/flow_camp_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
 
