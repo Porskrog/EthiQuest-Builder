@@ -44,6 +44,8 @@ class User(db.Model):
 
     # Relationship to UserChoices
     choices = db.relationship('UserChoice', back_populates='user')
+    # Relationship to ViewedDilemma
+    viewed_dilemmas = db.relationship('ViewedDilemma', back_populates='user')
 
 # UserChoices table
 class UserChoice(db.Model):
@@ -57,6 +59,18 @@ class UserChoice(db.Model):
     # Relationships
     user = db.relationship('User', back_populates='choices')
     option = db.relationship('Option') 
+
+    class ViewedDilemma(db.Model):
+    __tablename__ = 'ViewedDilemmas'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'))
+    dilemma_id = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'))
+    Timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', back_populates='viewed_dilemmas')
+    dilemma = db.relationship('Dilemma')
+
 
 # End of Database tables
 
