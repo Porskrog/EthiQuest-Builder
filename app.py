@@ -81,6 +81,12 @@ class ViewedDilemma(db.Model):
 # End of Database tables
 
 
+# Function to get viewed dilemmas for a user
+def get_viewed_dilemmas(user_id):
+    viewed_dilemmas = ViewedDilemma.query.filter_by(user_id=user_id).all()
+    viewed_dilemma_ids = [dilemma.dilemma_id for dilemma in viewed_dilemmas]
+    return viewed_dilemma_ids
+
 @app.route('/add_dilemma', methods=['POST'])
 def add_dilemma():
     data = request.get_json()
