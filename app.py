@@ -199,7 +199,7 @@ def get_random_dilemma():
         user = new_user
     
     # After fetching or creating a user  ######################## Take out again when finished debugging
-print(f"Fetched or created user with ID: {user.id}")
+    print(f"Fetched or created user with ID: {user.id}")
 
     # Get the list of viewed dilemmas for this user
     viewed_dilemmas = get_viewed_dilemmas(user.id)
@@ -218,7 +218,7 @@ print(f"Fetched or created user with ID: {user.id}")
     selected_dilemma = choice(unviewed_dilemmas)
     
     # Before inserting into ViewedDilemmas ################# Take out again when finished debugging
-print(f"Inserting with user_id: {user.id}, dilemma_id: {selected_dilemma.id}")
+    print(f"Inserting with user_id: {user.id}, dilemma_id: {selected_dilemma.id}")
 
     # Add an entry to the ViewedDilemmas table
     new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
