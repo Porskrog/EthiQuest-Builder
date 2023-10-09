@@ -62,33 +62,42 @@ function fetchUnviewedDilemmas(userCookie, callback) {
 
 
 function fetchRandomDilemma() {
-    let userCookie = getCookie("userCookie");
-    fetchUnviewedDilemmas(userCookie, function(error, dilemmas) {
-        if (error) {
-            console.error("Error fetching unviewed dilemmas:", error);
-            return;
+    let userCookie = getCookie("userCookie"); // Get the user cookie
+    $.ajax({
+        type: 'POST',
+        url: `${API_URL}/get_random_dilemma`,
+        data: JSON.stringify({ cookie_id: userCookie }),
+        contentType: "application/json; charset=utf-8",
+        success: function(response) {
+            if(response.message) {
+                $('#randomDilemmaDisplay').html('<h3>' + response.message + '</h3>');
+                return;
+            }
+
+            const dilemma = response.dilemma;
+            let dilemmaHtml = `<h3>${dilemma.question}</h3><ul>`;
+            dilemma.options.forEach(function(option) {
+                dilemmaHtml += `<li class="option-item" data-id="${option.id}">${option.text}</li>`;
+            });
+            dilemmaHtml += '</ul>';
+            $('#randomDilemmaDisplay').html(dilemmaHtml);
+
+            // Clear the option details
+            $('#optionDetailsDisplay').html('');
+
+            // Mark this dilemma as viewed
+            markDilemmaAsViewed(dilemma.id, userCookie);
+        },
+        error: function(error) {
+            if (error.status === 404) {
+                $('#randomDilemmaDisplay').html('<h3>No more dilemmas to display.</h3>');
+            } else {
+                console.error("Error fetching random dilemma:", error);
+            }
         }
-
-        if (dilemmas.length === 0) {
-            $('#randomDilemmaDisplay').html('<h3>No more dilemmas to display.</h3>');
-            return;
-        }
-
-        const dilemma = dilemmas[Math.floor(Math.random() * dilemmas.length)];
-        let dilemmaHtml = `<h3>${dilemma.question}</h3><ul>`;
-        dilemma.options.forEach(function(option) {
-            dilemmaHtml += `<li class="option-item" data-id="${option.id}">${option.text}</li>`;
-        });
-        dilemmaHtml += '</ul>';
-        $('#randomDilemmaDisplay').html(dilemmaHtml);
-        
-        // Clear the option details
-        $('#optionDetailsDisplay').html('');
-
-        // Mark this dilemma as viewed
-        markDilemmaAsViewed(dilemma.id, userCookie);
     });
 }
+
 
 
 // Function to mark a dilemma as viewed
