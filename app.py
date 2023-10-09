@@ -106,6 +106,9 @@ def get_viewed_dilemmas(user_id):
 #####################
 @app.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
+    print(f"Received request to mark dilemma {dilemma_id} as viewed")
+    user_id = request.json.get('user_id')
+    print(f"User ID from request: {user_id}")
     user_id = request.json.get('user_id')  # Replace this with actual logic to get user_id
 
     # Check if this dilemma has been viewed by this user before
@@ -115,8 +118,13 @@ def view_dilemma(dilemma_id):
 
     # If not viewed, add to the ViewedDilemmas table
     new_view = ViewedDilemma(user_id=user_id, dilemma_id=dilemma_id)
-    db.session.add(new_view)
-    db.session.commit()
+    try:
+        db.session.add(new_view)
+        db.session.commit()
+    except Exception as e:
+        print(f"Error while inserting into ViewedDilemmas: {e}")
+        db.session.rollback()
+        return jsonify({"message": "Internal Server Error"}), 500
     
     return jsonify({"message": "Dilemma marked as viewed"}), 201
 
