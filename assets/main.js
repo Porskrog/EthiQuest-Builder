@@ -106,7 +106,7 @@ function markDilemmaAsViewed(dilemmaId, userCookie) {
         type: 'POST',
         url: `${API_URL}/view_dilemma/${dilemmaId}`,
         data: JSON.stringify({
-            user_id: userCookie
+            cookie_id: userCookie
         }),
         contentType: "application/json; charset=utf-8",
         success: function(response) {

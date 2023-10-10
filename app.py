@@ -107,9 +107,17 @@ def get_viewed_dilemmas(user_id):
 @app.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
     print(f"Received request to mark dilemma {dilemma_id} as viewed")
-    user_id = request.json.get('user_id')
     print(f"User ID from request: {user_id}")
-    user_id = request.json.get('user_id')  # Replace this with actual logic to get user_id
+
+    cookie_id = request.json.get('cookie_id')
+    user = Users.query.filter_by(cookie_id=cookie_id).first()
+    if user:
+        user_id = user.id
+    else:
+        user = Users(cookie_id=cookie_id)
+        db.session.add(user)
+        db.session.commit()
+        user_id = user.id
 
     # Check if this dilemma has been viewed by this user before
     viewed = ViewedDilemma.query.filter_by(user_id=user_id, dilemma_id=dilemma_id).first()
