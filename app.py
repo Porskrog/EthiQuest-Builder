@@ -31,9 +31,9 @@ db = SQLAlchemy(app)
 # Initialize Flask-Migrate
 migrate = Migrate(app, db)
 
-################################################################################
-# Database tables for the Dilemma, Option, Users, UserChoices, ViewedDilemmas  #
-################################################################################
+##################################################################################
+# Database tables for the Dilemmas, Options, Users, UserChoices, ViewedDilemmas  #
+##################################################################################
 class Dilemma(db.Model):
     __tablename__ = 'Dilemmas'
     id = db.Column(db.Integer, primary_key=True)
@@ -116,11 +116,11 @@ def view_dilemma(dilemma_id):
     cookie_id = request.json.get('cookie_id')
 
     # Try to fetch the user by cookie ID
-    user = Users.query.filter_by(cookie_id=cookie_id).first()
+    user = User.query.filter_by(cookie_id=cookie_id).first()
 
     # If the user does not exist, create a new one
     if user is None:
-        user = Users(cookie_id=cookie_id)
+        user = User(cookie_id=cookie_id)
         db.session.add(user)
         db.session.commit()
 
