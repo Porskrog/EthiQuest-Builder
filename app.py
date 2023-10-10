@@ -1,35 +1,30 @@
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from random import choice 
 from datetime import datetime
 import logging
+from extensions import db
+from models import User, Dilemma, Option, UserChoice, ViewedDilemma
 
-logging.basicConfig(level=logging.INFO)
+def create_app():
+    app = Flask(__name__)
+    CORS(app)
 
-# Initialize your Flask app here
-app = Flask(__name__)
-CORS(app)
-
-# Switch to testing mode (This is for demonstration; normally, you'd set this in your test setup)
-app.config['TESTING'] = False
-
-# Check if the app is in test mode
-if app.config.get('TESTING'):
-    app.config.from_pyfile('test_config.py')
-else:
-    # Your existing production/staging database URI
+    # Configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flow_camp:ghRta9wBEkr2@mysql28.unoeuro.com:3306/flow_camp_db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
+    
+    # Initialize extensions
+    db.init_app(app)
+    migrate = Migrate(app, db)
+    
+    return app
 
-# Database configurationm  -- new comment
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress a warning
+app = create_app()
 
-# Initialize the database
-db = SQLAlchemy(app)
-
-# Initialize Flask-Migrate
-migrate = Migrate(app, db)
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
 
 ########################
 # Utility Functions    #
