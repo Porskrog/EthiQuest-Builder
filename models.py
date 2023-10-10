@@ -1,4 +1,6 @@
 from extensions import db
+from datetime import datetime
+
 
 ##################################################################################
 # Database tables for the Dilemmas, Options, Users, UserChoices, ViewedDilemmas  #
