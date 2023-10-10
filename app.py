@@ -4,6 +4,9 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from random import choice 
 from datetime import datetime
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Initialize your Flask app here
 app = Flask(__name__)
@@ -104,25 +107,32 @@ def get_viewed_dilemmas(user_id):
 #####################
 # Route Handlers    #
 #####################
+import logging
+
 @app.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
-    print(f"Received request to mark dilemma {dilemma_id} as viewed")
-    print(f"User ID from request: {user_id}")
+    logging.info(f"Received request to mark dilemma {dilemma_id} as viewed")
 
     cookie_id = request.json.get('cookie_id')
+
+    # Try to fetch the user by cookie ID
     user = Users.query.filter_by(cookie_id=cookie_id).first()
-    if user:
-        user_id = user.id
-    else:
+
+    # If the user does not exist, create a new one
+    if user is None:
         user = Users(cookie_id=cookie_id)
         db.session.add(user)
         db.session.commit()
-        user_id = user.id
+
+    # Now user.id will contain the ID, whether the user was just created or already existed
+    user_id = user.id
+
+    logging.info(f"User ID from request: {user_id}")
 
     # Check if this dilemma has been viewed by this user before
     viewed = ViewedDilemma.query.filter_by(user_id=user_id, dilemma_id=dilemma_id).first()
     if viewed:
-        return jsonify({"message": "Dilemma has been viewed before by this user"}), 200
+        return jsonify({"message": "Dilemma has been viewed before by this user"}), 409
 
     # If not viewed, add to the ViewedDilemmas table
     new_view = ViewedDilemma(user_id=user_id, dilemma_id=dilemma_id)
@@ -130,7 +140,7 @@ def view_dilemma(dilemma_id):
         db.session.add(new_view)
         db.session.commit()
     except Exception as e:
-        print(f"Error while inserting into ViewedDilemmas: {e}")
+        logging.error(f"Error while inserting into ViewedDilemmas: {e}")
         db.session.rollback()
         return jsonify({"message": "Internal Server Error"}), 500
     
