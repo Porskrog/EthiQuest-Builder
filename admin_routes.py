@@ -15,7 +15,7 @@ import logging
 
 # Add Dilemma       #
 
-@app.route('/add_dilemma', methods=['POST'])
+@admin_bp.route('/add_dilemma', methods=['POST'])
 def add_dilemma():
     data = request.get_json()
     new_dilemma = Dilemma(question=data['question'])
@@ -23,7 +23,7 @@ def add_dilemma():
     db.session.commit()
     return jsonify({'message': 'New dilemma added'}), 201
 
-@app.route('/get_dilemmas', methods=['GET'])
+@admin_bp.route('/get_dilemmas', methods=['GET'])
 def get_dilemmas():
     all_dilemmas = Dilemma.query.all()
     output = []
@@ -49,7 +49,7 @@ def get_dilemmas():
 
     return jsonify({'dilemmas': output})
 
-@app.route('/add_option/<DilemmaID>', methods=['POST'])
+@admin_bp.route('/add_option/<DilemmaID>', methods=['POST'])
 def add_option(DilemmaID):
     data = request.get_json()
     new_option = Option(
@@ -62,7 +62,7 @@ def add_option(DilemmaID):
     db.session.commit()
     return jsonify({'message': 'New option added'}), 201
 
-@app.route('/get_options/<DilemmaID>', methods=['GET'])
+@admin_bp.route('/get_options/<DilemmaID>', methods=['GET'])
 def get_options(DilemmaID):
     options = Option.query.filter_by(DilemmaID=DilemmaID).all()
     output = []
@@ -78,7 +78,7 @@ def get_options(DilemmaID):
     return jsonify({'options': output})
 
 
-@app.route('/get_option_details/<OptionID>', methods=['GET'])
+@admin_bp.route('/get_option_details/<OptionID>', methods=['GET'])
 def get_option_details(OptionID):
     option = Option.query.filter_by(id=OptionID).first()
     if not option:

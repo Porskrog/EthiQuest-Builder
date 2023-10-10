@@ -22,7 +22,7 @@ def get_viewed_dilemmas(user_id):
 #####################
 import logging
 
-@app.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
+@customer_bp.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
     logging.info(f"Received request to mark dilemma {dilemma_id} as viewed")
 
@@ -60,7 +60,7 @@ def view_dilemma(dilemma_id):
     return jsonify({"message": "Dilemma marked as viewed"}), 201
 
 
-@app.route('/get_options/<DilemmaID>', methods=['GET'])
+@customer_bp.route('/get_options/<DilemmaID>', methods=['GET'])
 def get_options(DilemmaID):
     options = Option.query.filter_by(DilemmaID=DilemmaID).all()
     output = []
@@ -75,7 +75,7 @@ def get_options(DilemmaID):
 
     return jsonify({'options': output})
 
-@app.route('/get_random_dilemma', methods=['POST'])  # Changed to POST to get user details
+@customer_bp.route('/get_random_dilemma', methods=['POST'])  # Changed to POST to get user details
 def get_random_dilemma():
     data = request.get_json()
     cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
@@ -135,7 +135,7 @@ def get_random_dilemma():
     return jsonify({'dilemma': dilemma_data})
 
 
-@app.route('/get_option_details/<OptionID>', methods=['GET'])
+@customer_bp.route('/get_option_details/<OptionID>', methods=['GET'])
 def get_option_details(OptionID):
     option = Option.query.filter_by(id=OptionID).first()
     if not option:
@@ -151,7 +151,7 @@ def get_option_details(OptionID):
     return jsonify({'option': option_data})
 
 # Store user's choice
-@app.route('/store_user_choice', methods=['POST'])
+@customer_bp.route('/store_user_choice', methods=['POST'])
 def store_user_choice():
     data = request.get_json()
     cookie_id = data['cookie_id']
