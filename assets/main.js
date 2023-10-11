@@ -41,7 +41,7 @@ function setCookie(cname, cvalue, exdays) {
     }
 
     // Replace this with your deployed API URL
-    const API_URL = 'https://ethiquest-builder.onrender.com';
+    const API_URL = 'https://ethiquest-builder.onrender.com/customer';
 
 function fetchUnviewedDilemmas(userCookie, callback) {
     $.ajax({
