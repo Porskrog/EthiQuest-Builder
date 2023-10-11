@@ -1,6 +1,7 @@
 # customer_bp.py
 from flask import Blueprint, jsonify, request
 from models import User, Dilemma, Option, UserChoice, ViewedDilemma
+from extensions import db
 from flask_cors import CORS
 from random import choice
 
