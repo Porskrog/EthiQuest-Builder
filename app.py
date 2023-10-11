@@ -21,7 +21,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(customer_bp, url_prefix='/customer')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-
+    
     return app
 
 app = create_app()

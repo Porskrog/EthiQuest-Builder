@@ -1,5 +1,5 @@
 # admin_routes.py
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 
 admin_bp = Blueprint('admin', __name__)

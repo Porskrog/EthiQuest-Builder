@@ -1,5 +1,5 @@
 # customer_bp.py
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 
 customer_bp = Blueprint('customer', __name__)
