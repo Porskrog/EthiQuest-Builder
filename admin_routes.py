@@ -5,7 +5,7 @@ from flask_cors import CORS
 admin_bp = Blueprint('admin', __name__)
 CORS(admin_bp, origins=["https://flow.camp"])
 
-@admin_bp.route('/get stats')
+@admin_bp.route('/get_stats')
 def get_admin_stats():
     return jsonify({"data": "admin stats"})
 
