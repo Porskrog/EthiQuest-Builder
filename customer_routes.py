@@ -1,7 +1,9 @@
 # customer_bp.py
 from flask import Blueprint, jsonify
+from flask_cors import CORS
 
 customer_bp = Blueprint('customer', __name__)
+CORS(customer_bp)  # <-- Enable CORS for the Blueprint
 
 @customer_bp.route('/get_data')
 def get_customer_data():
