@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify
 from flask_cors import CORS
 
 customer_bp = Blueprint('customer', __name__)
-CORS(customer_bp)  # <-- Enable CORS for the Blueprint
+CORS(customer_bp, origins=["https://flow.camp"])
 
 @customer_bp.route('/get_data')
 def get_customer_data():
