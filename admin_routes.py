@@ -1,5 +1,6 @@
 # admin_routes.py
 from flask import Blueprint, jsonify, request
+from models import User, Dilemma, Option, UserChoice, ViewedDilemma
 from flask_cors import CORS
 
 admin_bp = Blueprint('admin', __name__)
