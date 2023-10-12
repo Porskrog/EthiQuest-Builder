@@ -160,7 +160,7 @@ def get_option_details(OptionID):
 def store_user_choice():
     data = request.get_json()
     print("Data received:", data)
-    cookie_id = data.get['cookie_id', None]
+    cookie_id = data.get('cookie_id', None)
     option_id = data['option_id']
 
     # Check if user exists
