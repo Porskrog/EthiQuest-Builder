@@ -175,6 +175,8 @@ def store_user_choice():
 
     # Store the user's choice
     new_choice = UserChoice(option_id=option_id, user_id=user.id)
+    print("Option id:", option_id)
+    print("User id:", user_id)
     db.session.add(new_choice)
     db.session.commit()
 
