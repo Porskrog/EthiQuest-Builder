@@ -161,7 +161,11 @@ def store_user_choice():
     data = request.get_json()
     print("Data received:", data)
     cookie_id = data.get('cookie_id', None)
-    option_id = data['option_id']
+    OptionID = data.get('option_id', None)
+    DilemmaID = data.get('dilemma_id', None)  # Get the dilemma ID from the request
+
+    if not all([cookie_id, OptionID, DilemmaID]):
+        return jsonify({'message': 'Missing parameters'}), 400
 
     # Check if user exists
     user = User.query.filter_by(cookie_id=cookie_id).first()
@@ -174,13 +178,15 @@ def store_user_choice():
         user = new_user
 
     # Store the user's choice
-    new_choice = UserChoice(option_id=option_id, user_id=user.id)
-    print("Option id:", option_id)
-    print("User id:", user_id)
+    new_choice = UserChoice(OptionID=OptionID, UserID=user.id, DilemmaID=DilemmaID)
+
+    print("Option id:", OptionID)
+    print("User id:", user.id)
     db.session.add(new_choice)
     db.session.commit()
 
     return jsonify({'message': 'User choice stored successfully'}), 200
+
 
 if __name__ == '__main__':
     app.run()
