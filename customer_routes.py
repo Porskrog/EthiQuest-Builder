@@ -159,7 +159,8 @@ def get_option_details(OptionID):
 @customer_bp.route('/store_user_choice', methods=['POST'])
 def store_user_choice():
     data = request.get_json()
-    cookie_id = data['cookie_id']
+    print("Data received:", data)
+    cookie_id = data.get['cookie_id', None]
     option_id = data['option_id']
 
     # Check if user exists
