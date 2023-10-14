@@ -176,27 +176,35 @@ def store_user_choice():
         db.session.add(new_user)
         db.session.commit()
         user = new_user
-
-    # Store the user's choice
-    new_choice = UserChoice(OptionID=OptionID, UserID=user.id, DilemmaID=DilemmaID)
     
     cookie_id = data.get('cookie_id', None)  # Should this be 'user_cookie'?
     OptionID = data.get('option_id', None)
     DilemmaID = data.get('dilemma_id', None)
-    print(f"Received Cookie ID: {cookie_id}, Option ID: {OptionID}, Dilemma ID: {DilemmaID}")
 
     if not all([cookie_id, OptionID, DilemmaID]):
         missing_params = [k for k, v in {"cookie_id": cookie_id, "OptionID": OptionID, "DilemmaID": DilemmaID}.items() if v is None]
+        print(f"Missing parameters: {missing_params}")
         return jsonify({'message': f'Missing parameters: {missing_params}'}), 400
 
-    # Before inserting into UserChoices ################# Take out again when finished debugging
-    print("Received dilemma_id:", DilemmaID)  # Debug log
-    print("Received option_id:", OptionID)
-    print("User id:", user.id)
-    print("Inserting with user_id: {user.id}, dilemma_id: {DilemmaID}, option_id: {OptionID}")
+    # Check if user exists
+    user = User.query.filter_by(cookie_id=cookie_id).first()
 
-    db.session.add(new_choice)
-    db.session.commit()
+    # If user doesn't exist, create a new user
+    if not user:
+        new_user = User(cookie_id=cookie_id)
+        db.session.add(new_user)
+        db.session.commit()
+        user = new_user
+
+    # Store the user's choice
+    new_choice = UserChoice(OptionID=OptionID, UserID=user.id, DilemmaID=DilemmaID)
+
+    try:
+        db.session.add(new_choice)
+        db.session.commit()
+    except Exception as e:
+        print(f"Database commit failed: {e}")
+        return jsonify({'message': 'Database commit failed'}), 500
 
     return jsonify({'message': 'User choice stored successfully'}), 200
 
