@@ -179,6 +179,11 @@ def store_user_choice():
 
     # Store the user's choice
     new_choice = UserChoice(OptionID=OptionID, UserID=user.id, DilemmaID=DilemmaID)
+    
+    cookie_id = data.get('cookie_id', None)  # Should this be 'user_cookie'?
+    OptionID = data.get('option_id', None)
+    DilemmaID = data.get('dilemma_id', None)
+    print(f"Received Cookie ID: {cookie_id}, Option ID: {OptionID}, Dilemma ID: {DilemmaID}")
 
     if not all([cookie_id, OptionID, DilemmaID]):
         missing_params = [k for k, v in {"cookie_id": cookie_id, "OptionID": OptionID, "DilemmaID": DilemmaID}.items() if v is None]
