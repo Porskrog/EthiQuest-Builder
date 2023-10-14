@@ -180,6 +180,10 @@ def store_user_choice():
     # Store the user's choice
     new_choice = UserChoice(OptionID=OptionID, UserID=user.id, DilemmaID=DilemmaID)
 
+    if not all([cookie_id, OptionID, DilemmaID]):
+        missing_params = [k for k, v in {"cookie_id": cookie_id, "OptionID": OptionID, "DilemmaID": DilemmaID}.items() if v is None]
+        return jsonify({'message': f'Missing parameters: {missing_params}'}), 400
+
     print("Option id:", OptionID)
     print("User id:", user.id)
     db.session.add(new_choice)
