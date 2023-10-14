@@ -184,8 +184,12 @@ def store_user_choice():
         missing_params = [k for k, v in {"cookie_id": cookie_id, "OptionID": OptionID, "DilemmaID": DilemmaID}.items() if v is None]
         return jsonify({'message': f'Missing parameters: {missing_params}'}), 400
 
-    print("Option id:", OptionID)
+    # Before inserting into UserChoices ################# Take out again when finished debugging
+    print("Received dilemma_id:", DilemmaID)  # Debug log
+    print("Received option_id:", OptionID)
     print("User id:", user.id)
+    print("Inserting with user_id: {user.id}, dilemma_id: {DilemmaID}, option_id: {OptionID}")
+
     db.session.add(new_choice)
     db.session.commit()
 

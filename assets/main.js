@@ -77,8 +77,7 @@ jQuery(document).ready(function($) {
 
                 const dilemma = response.dilemma;
                 currentDilemmaID = dilemma.id; // Store the current dilemma ID
-
-                console.log("Current Dilemma ID:", currentDilemmaID);
+                console.log("Set currentDilemmaID:", currentDilemmaID); // Debug log
 
                 // Display the dilemma
                 let dilemmaHtml = `<h3>${dilemma.question}</h3><ul>`;
@@ -103,8 +102,6 @@ jQuery(document).ready(function($) {
             }
         });
     }
-
-
 
     // Function to mark a dilemma as viewed
     function markDilemmaAsViewed(dilemmaId, userCookie) {
@@ -152,6 +149,8 @@ jQuery(document).ready(function($) {
             user_cookie: userCookie,
             dilemma_id: currentDilemmaID
         });
+
+        console.log("Current Dilemma ID before sending:", currentDilemmaID); // Debug log
 
         $.ajax({
             type: 'POST',
