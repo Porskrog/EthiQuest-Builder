@@ -1,14 +1,17 @@
 <script type="text/javascript"> 
+
+let currentDilemmaID = null; 
+
 jQuery(document).ready(function($) {
 
-    // Function to generate a unique ID
-    function generateUniqueID() {
-        return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
-            const r = (Math.random() * 16) | 0,
-                v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-    }
+// Function to generate a unique ID
+function generateUniqueID() {
+    return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
+        const r = (Math.random() * 16) | 0,
+            v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
 
 function getCookie(cname) {
     let name = cname + "=";
@@ -118,21 +121,21 @@ function markDilemmaAsViewed(dilemmaId, userCookie) {
     });
 }
 
-    // Fetch option details
-    function fetchOptionDetails(OptionID) {
-        $.ajax({
-            type: 'GET',
-            url: `${API_URL}/get_option_details/${OptionID}`,
-            success: function(response) {
-                const option = response.option;
-                let optionDetailsHtml = `<h4>${option.text}</h4><p>Pros: ${option.pros}</p><p>Cons: ${option.cons}</p>`;
-                $('#optionDetailsDisplay').html(optionDetailsHtml);
-            },
-            error: function(error) {
-                console.error("Error fetching option details:", error);
-            }
-        });
-    }
+// Fetch option details
+function fetchOptionDetails(OptionID) {
+    $.ajax({
+        type: 'GET',
+        url: `${API_URL}/get_option_details/${OptionID}`,
+        success: function(response) {
+            const option = response.option;
+            let optionDetailsHtml = `<h4>${option.text}</h4><p>Pros: ${option.pros}</p><p>Cons: ${option.cons}</p>`;
+            $('#optionDetailsDisplay').html(optionDetailsHtml);
+        },
+        error: function(error) {
+            console.error("Error fetching option details:", error);
+        }
+    });
+}
 
  // Add a click event listener to option list items
 $(document).on('click', '.option-item', function() {
@@ -142,10 +145,11 @@ $(document).on('click', '.option-item', function() {
     let userCookie = getCookie("userCookie"); // Get the user cookie
     $.ajax({
         type: 'POST',
-        url: `${API_URL}/store_user_choice`, // Replace with your actual backend URL
+        url: `${API_URL}/store_user_choice`,
         data: JSON.stringify({
             option_id: OptionID,
-            user_cookie: userCookie
+            user_cookie: userCookie,
+            dilemma_id: currentDilemmaID  // Include the dilemma ID here
         }),
         contentType: "application/json; charset=utf-8",
         success: function(response) {
