@@ -160,42 +160,24 @@ def get_option_details(OptionID):
 def store_user_choice():
     data = request.get_json()
     print("Data received:", data)
-    cookie_id = data.get('cookie_id', None)
+    cookie_id = data.get('cookie_id', None)  # Should this be 'user_cookie'?
     OptionID = data.get('option_id', None)
     DilemmaID = data.get('dilemma_id', None)  # Get the dilemma ID from the request
 
     if not all([cookie_id, OptionID, DilemmaID]):
-        return jsonify({'message': 'Missing parameters'}), 400
-
-    # Check if user exists
-    user = User.query.filter_by(cookie_id=cookie_id).first()
-    
-    # If user doesn't exist, create a new user
-    if not user:
-        new_user = User(cookie_id=cookie_id)
-        db.session.add(new_user)
-        db.session.commit()
-        user = new_user
-    
-    cookie_id = data.get('cookie_id', None)  # Should this be 'user_cookie'?
-    OptionID = data.get('option_id', None)
-    DilemmaID = data.get('dilemma_id', None)
-
-    if not all([cookie_id, OptionID, DilemmaID]):
         missing_params = [k for k, v in {"cookie_id": cookie_id, "OptionID": OptionID, "DilemmaID": DilemmaID}.items() if v is None]
-        print(f"Missing parameters: {missing_params}")
         return jsonify({'message': f'Missing parameters: {missing_params}'}), 400
 
     # Check if user exists
     user = User.query.filter_by(cookie_id=cookie_id).first()
-
+    
     # If user doesn't exist, create a new user
     if not user:
         new_user = User(cookie_id=cookie_id)
         db.session.add(new_user)
         db.session.commit()
         user = new_user
-
+    
     # Store the user's choice
     new_choice = UserChoice(OptionID=OptionID, UserID=user.id, DilemmaID=DilemmaID)
 
