@@ -160,7 +160,7 @@ def get_option_details(OptionID):
 def store_user_choice():
     data = request.get_json()
     print("Data received:", data)
-    cookie_id = data.get('cookie_id', None)  # Should this be 'user_cookie'?
+    cookie_id = data.get('user_cookie', None)  # Should this be 'user_cookie'?
     OptionID = data.get('option_id', None)
     DilemmaID = data.get('dilemma_id', None)  # Get the dilemma ID from the request
 
