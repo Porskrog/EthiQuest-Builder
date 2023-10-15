@@ -12,7 +12,7 @@ try:
     response = openai.Completion.create(
         engine="GPT-4",
         prompt="your-prompt-here",
-        max_tokens=100
+        max_tokens=100 
     )
     generated_text = response.choices[0].text.strip()
 except Exception as e:
