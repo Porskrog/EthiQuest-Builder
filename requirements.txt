@@ -5,3 +5,6 @@ gunicorn
 Flask-CORS
 Flask-Migrate
 openai
+Flask-Limiter
+Flask-Caching
+```
