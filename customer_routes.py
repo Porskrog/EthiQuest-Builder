@@ -1,9 +1,20 @@
 # customer_bp.py
 from flask import Blueprint, jsonify, request
-from models import User, Dilemma, Option, UserChoice, ViewedDilemma
+from models import User, Dilemma, Option, UserChoice, ViewedDilemma, ContextCharacteristic, DilemmasContextCharacteristic
 from extensions import db
 from flask_cors import CORS
 from random import choice
+from sqlalchemy import desc # To get the last dilemma and option for a user
+from app import limiter, cache  # Assuming your app.py is named 'app.py'
+
+import os
+import openai
+import json
+
+cache = cache(app, config={'CACHE_TYPE': 'simple'})
+
+api_key = os.environ.get('OPENAI_API_KEY')
+openai.api_key = api_key
 
 customer_bp = Blueprint('customer', __name__)
 CORS(customer_bp, origins=["https://flow.camp"])
@@ -12,9 +23,9 @@ CORS(customer_bp, origins=["https://flow.camp"])
 def get_customer_data():
     return jsonify({"data": "customer data"})
 
-########################
-# Utility Functions    #
-########################
+######################################################################################################
+# Utility Functions                                                                                  #
+######################################################################################################
 
 # Function to get viewed dilemmas for a user
 def get_viewed_dilemmas(user_id):
@@ -22,10 +33,64 @@ def get_viewed_dilemmas(user_id):
     viewed_dilemma_ids = [dilemma.dilemma_id for dilemma in viewed_dilemmas]
     return viewed_dilemma_ids
 
-#####################
-# Route Handlers    #
-#####################
+# Fetch the last dilemma and option chosen by this user from the database.
+def get_last_dilemma_and_option(user_id):
+    last_choice = UserChoice.query.filter_by(UserID=user_id).order_by(UserChoice.timestamp.desc()).first()
+    if last_choice:
+        last_dilemma = Dilemma.query.get(last_choice.DilemmaID)
+        last_option = Option.query.get(last_choice.OptionID)
+        return last_dilemma.question, last_option.text  # Assuming 'question' and 'text' are the relevant fields.
+    else:
+        return None, None
+
+# Function to get or create a user
+def get_or_create_user(cookie_id):
+    user = User.query.filter_by(cookie_id=cookie_id).first()
+    if not user:
+        user = User(cookie_id=cookie_id)
+        db.session.add(user)
+        db.session.commit()
+    return user
+
+# Function to add a new dilemma and options to the database
+def add_new_dilemma_and_options_to_db(headline, options, context):
+    new_dilemma = Dilemma(question=headline)
+    db.session.add(new_dilemma)
+    db.session.commit()
+
+    for opt in options:
+        new_option = Option(text=opt['text'], pros=opt['pros'], cons=opt['cons'], DilemmaID=new_dilemma.id)
+        db.session.add(new_option)
+
+    for characteristic in context:
+        existing_characteristic = ContextCharacteristic.query.filter_by(name=characteristic).first()
+        if not existing_characteristic:
+            new_characteristic = ContextCharacteristic(name=characteristic)
+            db.session.add(new_characteristic)
+            db.session.commit()
+            char_id = new_characteristic.id
+        else:
+            char_id = existing_characteristic.id
+
+        new_dilemma_context = DilemmasContextCharacteristic(DilemmaID=new_dilemma.id, ContextCharacteristicID=char_id)
+        db.session.add(new_dilemma_context)
+    db.session.commit()
+    return new_dilemma
+
+# Function to fetch unviewed dilemmas for a user
+def fetch_unviewed_dilemmas(user_id):
+    viewed_dilemmas = get_viewed_dilemmas(user_id)
+    all_dilemmas = Dilemma.query.all()
+    unviewed_dilemmas = [d for d in all_dilemmas if d.id not in viewed_dilemmas]
+    return unviewed_dilemmas
+
+
+######################################################################################################
+# Route Handlers                                                                                     #
+######################################################################################################
 import logging
+
+logging.basicConfig(level=logging.INFO)  # Sets up basic logging
 
 @customer_bp.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
@@ -80,64 +145,137 @@ def get_options(DilemmaID):
 
     return jsonify({'options': output})
 
+#####################################################################
+#   Get Random Dilemma API endpoint for ALL users (free and paying) # 
+#####################################################################
+
+@limiter.limit("5 per minute")
 @customer_bp.route('/get_random_dilemma', methods=['POST'])  # Changed to POST to get user details
 def get_random_dilemma():
-    data = request.get_json()
-    cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
-    
-    # Fetch the user from the database
-    user = User.query.filter_by(cookie_id=cookie_id).first()
-    
-    # If user doesn't exist, create a new user
-    if not user:
-        new_user = User(cookie_id=cookie_id)
-        db.session.add(new_user)
+    try:
+        data = request.get_json()
+        cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
+
+        if not cookie_id:
+            logging.warning("Missing cookie_id in the request")
+            return jsonify({'message': 'Missing cookie_id'}), 400
+
+        # Get or create the user   
+        user = get_or_create_user(cookie_id)
+
+        if user.user_type == 'Paying':
+            # Generate new dilemma using GPT-4
+
+            # Fetch the last dilemma and option for this user from the database
+            last_dilemma, last_option = get_last_dilemma_and_option(user.id)
+
+            # Decide whether to make the new dilemma consequential of the former dilemma
+            make_consequential = choice([True, False])
+
+            # Generate the prompt for GPT-4
+            base_prompt = "Please generate an ethical and leadership dilemma related to program management."
+            if make_consequential and last_dilemma and last_option:
+                full_prompt = f"{base_prompt} Given that the previous dilemma was: {last_dilemma} and the chosen option was: {last_option}, please it a direct consequence of the previous choice."
+            else:
+                full_prompt = base_prompt
+
+            # Add the standard format to the prompt
+            full_prompt += """
+            Format the dilemma as follows:
+            Headline: {Headline here}
+            Context: {Relevant context characteristics}
+            Description: {Brief description}
+            Option A: {Option A}
+            - Pros: {Pros for Option A}
+            - Cons: {Cons for Option A}
+            Option B: {Option B}
+            - Pros: {Pros for Option B}
+            - Cons: {Cons for Option B}
+            Option C: {Option C} (if applicable)
+            - Pros: {Pros for Option C}
+            - Cons: {Cons for Option C}
+            """
+
+            # API call to GPT-4 to generate the new dilemma
+            try:
+                response = openai.Completion.create(
+                    engine="gpt-4",
+                    prompt=full_prompt,
+                    max_tokens=100
+                )
+                generated_text = response.choices[0].text.strip()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                return jsonify({"message": "Internal Server Error"}), 500
+
+            # Parsing logic to extract the dilemma, options, pros, and cons from the generated_text
+            lines = generated_text.split("\n")
+            headline = lines[0].split(":")[1].strip()
+            context = lines[1].split(":")[1].strip().split(", ")
+            description = lines[2].split(":")[1].strip()
+            options = []
+
+            for i in range(3, len(lines), 3):
+                option_text = lines[i].split(":")[1].strip()
+                pros = lines[i+1].split(":")[1].strip().split(", ")
+                cons = lines[i+2].split(":")[1].strip().split(", ")
+                options.append({"text": option_text, "pros": pros, "cons": cons})
+                pros_str = ", ".join(pros)
+                cons_str = ", ".join(cons)
+
+            # Store this new dilemma and options in your database
+            # Insert Context Characteristics and update the many-to-many table
+            new_dilemma = add_new_dilemma_and_options_to_db(headline, options, context)
+
+            # Prepare to add an entry to the ViewedDillemmas table before preparing the response
+            selected_dilemma = new_dilemma
+
+        else:  # Free user
+            # Get the list of viewed dilemmas for this user
+            viewed_dilemmas = get_viewed_dilemmas(user.id)
+        
+            # Get all dilemmas from the database
+            all_dilemmas = Dilemma.query.all()
+        
+            # Filter out the viewed dilemmas
+            unviewed_dilemmas = fetch_unviewed_dilemmas(user.id)
+
+            # If there are no unviewed dilemmas, handle that case
+            if not unviewed_dilemmas:
+                return jsonify({"message": "No new dilemmas available"}), 404
+        
+            # Pick a random dilemma from the unviewed dilemmas
+            selected_dilemma = choice(unviewed_dilemmas)
+
+        # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes for free users and paying users
+        new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
+        db.session.add(new_view)
         db.session.commit()
-        user = new_user
-    
-    # After fetching or creating a user  ######################## Take out again when finished debugging
-    print(f"Fetched or created user with ID: {user.id}")
 
-    # Get the list of viewed dilemmas for this user
-    viewed_dilemmas = get_viewed_dilemmas(user.id)
-    
-    # Get all dilemmas from the database
-    all_dilemmas = Dilemma.query.all()
-    
-    # Filter out the viewed dilemmas
-    unviewed_dilemmas = [d for d in all_dilemmas if d.id not in viewed_dilemmas]
-    
-    # If there are no unviewed dilemmas, handle that case
-    if not unviewed_dilemmas:
-        return jsonify({"message": "No new dilemmas available"}), 404
-    
-    # Pick a random dilemma from the unviewed dilemmas
-    selected_dilemma = choice(unviewed_dilemmas)
-    
-    # Before inserting into ViewedDilemmas ################# Take out again when finished debugging
-    print(f"Inserting with user_id: {user.id}, dilemma_id: {selected_dilemma.id}")
+        options = Option.query.filter_by(DilemmaID=selected_dilemma.id).all()
 
-    # Add an entry to the ViewedDilemmas table
-    new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
-    db.session.add(new_view)
-    db.session.commit()
+        # Prepare response
+        dilemma_data = {
+            'id': selected_dilemma.id,
+            'question': selected_dilemma.question,
+            'options': [
+                {
+                    'id': option.id,
+                    'text': option.text,
+                    'pros': option.pros,
+                    'cons': option.cons
+                } for option in options
+            ]
+        }
 
-    options = Option.query.filter_by(DilemmaID=selected_dilemma.id).all()
-
-    dilemma_data = {
-        'id': selected_dilemma.id,
-        'question': selected_dilemma.question,
-        'options': [
-            {
-                'id': option.id,
-                'text': option.text,
-                'pros': option.pros,
-                'cons': option.cons
-            } for option in options
-        ]
-    }
+        return jsonify({'dilemma': dilemma_data}), 200
     
-    return jsonify({'dilemma': dilemma_data})
+    except KeyError as e:
+        logging.error(f"KeyError: {e}")
+        return jsonify({"message": "Internal Server Error"}), 500
+    except Exception as e:
+        logging.critical(f"An unexpected error occurred: {e}")
+        return jsonify({"message": "Internal Server Error"}), 500
 
 
 @customer_bp.route('/get_option_details/<OptionID>', methods=['GET'])
