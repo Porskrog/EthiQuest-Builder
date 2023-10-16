@@ -33,7 +33,7 @@ def get_viewed_dilemmas(user_id):
 
 # Fetch the last dilemma and option chosen by this user from the database.
 def get_last_dilemma_and_option(user_id):
-    last_choice = UserChoice.query.filter_by(UserID=user_id).order_by(UserChoice.timestamp.desc()).first()
+    last_choice = UserChoice.query.filter_by(UserID=user_id).order_by(UserChoice.Timestamp.desc()).first()
     if last_choice:
         last_dilemma = Dilemma.query.get(last_choice.DilemmaID)
         last_option = Option.query.get(last_choice.OptionID)
