@@ -11,8 +11,6 @@ import os
 import openai
 import json
 
-cache = cache(app, config={'CACHE_TYPE': 'simple'})
-
 api_key = os.environ.get('OPENAI_API_KEY')
 openai.api_key = api_key
 
