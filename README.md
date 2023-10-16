@@ -23,8 +23,8 @@ Install the required packages: pip install -r requirements.txt
 Set up the database: flask db upgrade
 Run the application: flask run
 
-# Contributing
+## Contributing
 We welcome contributions! Please read our Contributing Guide for details on how to participate in this project.
 
-# Contact
+## Contact
 For more information or if you have any questions, please feel free to reach out at contact@flow.camp.

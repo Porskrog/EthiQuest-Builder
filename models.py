@@ -2,8 +2,10 @@ from extensions import db
 from datetime import datetime
 
 ##################################################################################
-# Database tables for the Dilemmas, Options, Users, UserChoices, ViewedDilemmas  #
+# Database tables for the Dilemmas, Options, ContextCharacteristics, DilemmaContextCharacteristics, Users, UserChoices, ViewedDilemmas  #
 ##################################################################################
+
+# Dilemmas table
 class Dilemma(db.Model):
     __tablename__ = 'Dilemmas'
     id = db.Column(db.Integer, primary_key=True)
@@ -12,6 +14,7 @@ class Dilemma(db.Model):
     # Relationship to the Options table
     options = db.relationship('Option', back_populates='dilemma')
 
+# Options table
 class Option(db.Model):
     __tablename__ = 'Options'
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +26,18 @@ class Option(db.Model):
     # Relationship to the Dilemmas table
     dilemma = db.relationship('Dilemma', back_populates='options')
 
+# ContextCharacteristics table
+class ContextCharacteristic(db.Model):
+    __tablename__ = 'ContextCharacteristics'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+# DilemmasContextCharacteristics table
+class DilemmasContextCharacteristic(db.Model):
+    __tablename__ = 'DilemmasContextCharacteristics'
+    DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'), primary_key=True)
+    ContextCharacteristicID = db.Column(db.Integer, db.ForeignKey('ContextCharacteristics.id'), primary_key=True)
+
 # Combined User table
 class User(db.Model):
     __tablename__ = 'Users'
@@ -30,6 +45,7 @@ class User(db.Model):
     UserID = db.Column(db.String(50), unique=True)  # For registered users
     cookie_id = db.Column(db.String(100), unique=True, nullable=True)  # For anonymous users
     LastVisit = db.Column(db.DateTime, default=datetime.utcnow)
+    user_type = db.Column(db.String(50), nullable=False, default='Free')  # default is 'Free'
 
     # Relationship to UserChoices
     choices = db.relationship('UserChoice', back_populates='user')
