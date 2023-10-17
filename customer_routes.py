@@ -57,7 +57,13 @@ def add_new_dilemma_and_options_to_db(context_list, description, options):
     db.session.commit()
 
     for opt in options:
-        new_option = Option(text=opt['text'], pros=opt['pros'], cons=opt['cons'], DilemmaID=new_dilemma.id)
+        # Convert pros and cons lists to comma-separated strings
+        new_option = Option(
+            text=opt['text'],
+            pros=', '.join(opt['pros']),
+            cons=', '.join(opt['cons']),
+            DilemmaID=new_dilemma.id
+        )
         try:
             db.session.add(new_option)
             db.session.commit()
