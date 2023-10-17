@@ -173,7 +173,7 @@ def get_random_dilemma():
             # Generate the prompt for GPT-4
             base_prompt = "Please generate an ethical and leadership dilemma related to program management."
             if make_consequential and last_dilemma and last_option:
-                full_prompt = f"{base_prompt} Given that the previous dilemma was: {last_dilemma} and the chosen option was: {last_option}, please it a direct consequence of the previous choice."
+                full_prompt = f"{base_prompt} It must be a direct consequence of the previous dilemma was: {last_dilemma} and the chosen option which was: {last_option}"
             else:
                 full_prompt = base_prompt
 
@@ -181,17 +181,14 @@ def get_random_dilemma():
             full_prompt += """
             Format the dilemma as follows:
             Headline: {Headline here}
-            Context: {Relevant context characteristics}
-            Description: {Brief description}
+            Context: {Comma separated important context characteristics as for example Public Sector, Private Sector, Fixed Price, Variable Costs, Fixed Scope, Waterfall, Agile, etc.}
+            Description (max 50 words): {Brief description}
             Option A: {Option A}
             - Pros: {Pros for Option A}
             - Cons: {Cons for Option A}
             Option B: {Option B}
             - Pros: {Pros for Option B}
             - Cons: {Cons for Option B}
-            Option C: {Option C} (if applicable)
-            - Pros: {Pros for Option C}
-            - Cons: {Cons for Option C}
             """
 
             print(f"GPT-4 Prompt text: {full_prompt}")  # Debugging line
