@@ -80,9 +80,9 @@ jQuery(document).ready(function($) {
                 console.log("Set currentDilemmaID:", currentDilemmaID); // Debug log
 
                 // Display the dilemma
-                let dilemmaHtml = `<h3>${dilemma.question}</h3><ul>`;
+                let dilemmaHtml = `<h3>${dilemma.question}</h3><p><h4>Choose an option</h4></p><ul>`;
                 dilemma.options.forEach(function(option) {
-                    dilemmaHtml += `<li class="option-item" data-id="${option.id}">${option.text}</li>`;
+                    dilemmaHtml += `<h4><li class="option-item" data-id="${option.id}">${option.text}</li></h4>`;
                 });
                 dilemmaHtml += '</ul>';
                 $('#randomDilemmaDisplay').html(dilemmaHtml);
