@@ -211,19 +211,37 @@ def get_random_dilemma():
 
             # Parsing logic to extract the dilemma, options, pros, and cons from the generated_text
             try:
-                lines = generated_text.split("\n")
-                headline = lines[0].split(":")[1].strip()
-                context = lines[1].split(":")[1].strip().split(", ")
-                description = lines[2].split(":")[1].strip()
+                # Split the generated text into lines
+                lines = generated_text.strip().split("\n")
+
+                # Initialize empty dictionaries to hold the parsed information
+                dilemma = {}
                 options = []
 
-                for i in range(3, len(lines), 3):
-                    option_text = lines[i].split(":")[1].strip()
-                    pros = lines[i+1].split(":")[1].strip().split(", ")
-                    cons = lines[i+2].split(":")[1].strip().split(", ")
-                    options.append({"text": option_text, "pros": pros, "cons": cons})
-                    pros_str = ", ".join(pros)
-                    cons_str = ", ".join(cons)
+                # Loop over the lines and parse them
+                for line in lines:
+                    if "Headline:" in line:
+                        dilemma['Headline'] = line.split(":", 1)[1].strip()
+                    elif "Context:" in line:
+                        dilemma['Context'] = line.split(":", 1)[1].strip()
+                    elif "Description:" in line:
+                        dilemma['Description'] = line.split(":", 1)[1].strip()
+                    elif "Option " in line:
+                        option = {}
+                        option['text'] = line.split(":", 1)[1].strip()
+                    elif "- Pros:" in line:
+                        option['pros'] = line.split(":", 1)[1].strip().split(", ")
+                    elif "- Cons:" in line:
+                        option['cons'] = line.split(":", 1)[1].strip().split(", ")
+                        options.append(option)  # Only append the option once it's fully formed
+
+                # Validate that we have all the necessary components
+                if 'Headline' not in dilemma or 'Context' not in dilemma or 'Description' not in dilemma:
+                    raise Exception("Missing headline, context, or description in the generated text.")
+                if len(options) < 2:
+                    raise Exception("At least two options are required in the generated text.")
+
+                # Now you can use `dilemma` and `options` as needed
             except Exception as e:
                 print(f"Error while parsing the generated text: {e}")
                 return jsonify({"message": "Internal Server Error"}), 500
