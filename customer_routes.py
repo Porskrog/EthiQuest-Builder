@@ -51,16 +51,21 @@ def get_or_create_user(cookie_id):
     return user
 
 # Function to add a new dilemma and options to the database
-def add_new_dilemma_and_options_to_db(headline, options, context):
-    new_dilemma = Dilemma(question=headline)
+def add_new_dilemma_and_options_to_db(context_list, description, options):
+    new_dilemma = Dilemma(question=description)
     db.session.add(new_dilemma)
     db.session.commit()
 
     for opt in options:
         new_option = Option(text=opt['text'], pros=opt['pros'], cons=opt['cons'], DilemmaID=new_dilemma.id)
-        db.session.add(new_option)
+        try:
+            db.session.add(new_option)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"An error occurred: {e}")
 
-    for characteristic in context:
+    for characteristic in context_list:
         existing_characteristic = ContextCharacteristic.query.filter_by(name=characteristic).first()
         if not existing_characteristic:
             new_characteristic = ContextCharacteristic(name=characteristic)
@@ -72,7 +77,7 @@ def add_new_dilemma_and_options_to_db(headline, options, context):
 
         new_dilemma_context = DilemmasContextCharacteristic(DilemmaID=new_dilemma.id, ContextCharacteristicID=char_id)
         db.session.add(new_dilemma_context)
-    db.session.commit()
+        db.session.commit()
     return new_dilemma
 
 # Function to fetch unviewed dilemmas for a user
@@ -180,7 +185,6 @@ def get_random_dilemma():
             # Add the standard format to the prompt
             full_prompt += """
             Format the dilemma as follows:
-            Headline: {Headline here, max 10 words}
             Context: {Comma separated important context characteristics as for example Public Sector, Private Sector, Fixed Price, Variable Costs, Fixed Scope, Waterfall, Agile, etc., max 10 words}
             Description: {Brief description, max 60 words}
             Option A: {Option A, max 20 words}
@@ -220,9 +224,7 @@ def get_random_dilemma():
 
                 # Loop over the lines and parse them
                 for line in lines:
-                    if "Headline:" in line:
-                        dilemma['Headline'] = line.split(":", 1)[1].strip()
-                    elif "Context:" in line:
+                    if "Context:" in line:
                         dilemma['Context'] = line.split(":", 1)[1].strip()
                     elif "Description:" in line:
                         dilemma['Description'] = line.split(":", 1)[1].strip()
@@ -236,8 +238,8 @@ def get_random_dilemma():
                         options.append(option)  # Only append the option once it's fully formed
 
                 # Validate that we have all the necessary components
-                if 'Headline' not in dilemma or 'Context' not in dilemma or 'Description' not in dilemma:
-                    raise Exception("Missing headline, context, or description in the generated text.")
+                if 'Context' not in dilemma or 'Description' not in dilemma:
+                    raise Exception("Missing context, or description in the generated text.")
                 if len(options) < 2:
                     raise Exception("At least two options are required in the generated text.")
 
@@ -248,7 +250,8 @@ def get_random_dilemma():
 
             # Store this new dilemma and options in your database
             # Insert Context Characteristics and update the many-to-many table
-            new_dilemma = add_new_dilemma_and_options_to_db(headline, options, context)
+            context_list = dilemma['Context'].split(", ")
+            new_dilemma = add_new_dilemma_and_options_to_db(context_list, description, options)
 
             # Prepare to add an entry to the ViewedDillemmas table before preparing the response
             selected_dilemma = new_dilemma
