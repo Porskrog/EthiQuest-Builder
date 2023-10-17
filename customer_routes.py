@@ -206,6 +206,7 @@ def get_random_dilemma():
                     max_tokens=100
                 )
                 generated_text = response['choices'][0]['message']['content']
+                print(f"Generated text: {generated_text}")  # Debugging line
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return jsonify({"message": "Internal Server Error"}), 500
