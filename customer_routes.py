@@ -180,15 +180,15 @@ def get_random_dilemma():
             # Add the standard format to the prompt
             full_prompt += """
             Format the dilemma as follows:
-            Headline: {Headline here}
-            Context: {Comma separated important context characteristics as for example Public Sector, Private Sector, Fixed Price, Variable Costs, Fixed Scope, Waterfall, Agile, etc.}
-            Description (max 50 words): {Brief description}
-            Option A: {Option A}
-            - Pros: {Pros for Option A}
-            - Cons: {Cons for Option A}
-            Option B: {Option B}
-            - Pros: {Pros for Option B}
-            - Cons: {Cons for Option B}
+            Headline: {Headline here, max 10 words}
+            Context: {Comma separated important context characteristics as for example Public Sector, Private Sector, Fixed Price, Variable Costs, Fixed Scope, Waterfall, Agile, etc., max 10 words}
+            Description: {Brief description, max 60 words}
+            Option A: {Option A, max 20 words}
+            - Pros: {Pros for Option A, max 20 words}
+            - Cons: {Cons for Option A, max 20 words}
+            Option B: {Option B, max 20 words}
+            - Pros: {Pros for Option B, max 20 words}
+            - Cons: {Cons for Option B, max 20 words}
             """
 
             print(f"GPT-4 Prompt text: {full_prompt}")  # Debugging line
@@ -201,7 +201,7 @@ def get_random_dilemma():
                         {"role": "system", "content": "You are a leadership dilemma generator."},
                         {"role": "user", "content": full_prompt}
                     ],
-                    max_tokens=200
+                    max_tokens=250
                 )
                 generated_text = response['choices'][0]['message']['content']
                 print(f"Generated text: {generated_text}")  # Debugging line
