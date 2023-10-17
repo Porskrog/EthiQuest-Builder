@@ -196,30 +196,38 @@ def get_random_dilemma():
 
             # API call to GPT-4 to generate the new dilemma
             try:
-                response = openai.Completion.create(
-                    engine="gpt-4",
-                    prompt=full_prompt,
+
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You are a leadership dilemma generator."},
+                        {"role": "user", "content": full_prompt}
+                    ],
                     max_tokens=100
                 )
-                generated_text = response.choices[0].text.strip()
+                generated_text = response['choices'][0]['message']['content']
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return jsonify({"message": "Internal Server Error"}), 500
 
             # Parsing logic to extract the dilemma, options, pros, and cons from the generated_text
-            lines = generated_text.split("\n")
-            headline = lines[0].split(":")[1].strip()
-            context = lines[1].split(":")[1].strip().split(", ")
-            description = lines[2].split(":")[1].strip()
-            options = []
+            try:
+                lines = generated_text.split("\n")
+                headline = lines[0].split(":")[1].strip()
+                context = lines[1].split(":")[1].strip().split(", ")
+                description = lines[2].split(":")[1].strip()
+                options = []
 
-            for i in range(3, len(lines), 3):
-                option_text = lines[i].split(":")[1].strip()
-                pros = lines[i+1].split(":")[1].strip().split(", ")
-                cons = lines[i+2].split(":")[1].strip().split(", ")
-                options.append({"text": option_text, "pros": pros, "cons": cons})
-                pros_str = ", ".join(pros)
-                cons_str = ", ".join(cons)
+                for i in range(3, len(lines), 3):
+                    option_text = lines[i].split(":")[1].strip()
+                    pros = lines[i+1].split(":")[1].strip().split(", ")
+                    cons = lines[i+2].split(":")[1].strip().split(", ")
+                    options.append({"text": option_text, "pros": pros, "cons": cons})
+                    pros_str = ", ".join(pros)
+                    cons_str = ", ".join(cons)
+            except Exception as e:
+                print(f"Error while parsing the generated text: {e}")
+                return jsonify({"message": "Internal Server Error"}), 500
 
             # Store this new dilemma and options in your database
             # Insert Context Characteristics and update the many-to-many table
