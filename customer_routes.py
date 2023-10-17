@@ -194,6 +194,7 @@ def get_random_dilemma():
             - Cons: {Cons for Option C}
             """
 
+            print(f"GPT-4 Prompt text: {full_prompt}")  # Debugging line
             # API call to GPT-4 to generate the new dilemma
             try:
 
@@ -203,7 +204,7 @@ def get_random_dilemma():
                         {"role": "system", "content": "You are a leadership dilemma generator."},
                         {"role": "user", "content": full_prompt}
                     ],
-                    max_tokens=100
+                    max_tokens=200
                 )
                 generated_text = response['choices'][0]['message']['content']
                 print(f"Generated text: {generated_text}")  # Debugging line
