@@ -251,6 +251,7 @@ def get_random_dilemma():
             # Store this new dilemma and options in your database
             # Insert Context Characteristics and update the many-to-many table
             context_list = dilemma['Context'].split(", ")
+            description = dilemma['Description']
             new_dilemma = add_new_dilemma_and_options_to_db(context_list, description, options)
 
             # Prepare to add an entry to the ViewedDillemmas table before preparing the response
