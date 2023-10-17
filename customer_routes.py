@@ -281,9 +281,13 @@ def get_random_dilemma():
             selected_dilemma = choice(unviewed_dilemmas)
 
         # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes for free users and paying users
-        new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
-        db.session.add(new_view)
-        db.session.commit()
+        try:
+            new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
+            db.session.add(new_view)
+            db.session.commit()
+        except Exception as e:
+            print(f"An error occurred when updating ViewedDilemma: {e}")
+            return jsonify({"message": "Internal Server Error when updating ViewedDilemma"}), 500
 
         options = Option.query.filter_by(DilemmaID=selected_dilemma.id).all()
 
