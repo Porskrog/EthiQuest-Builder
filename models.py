@@ -38,6 +38,14 @@ class DilemmasContextCharacteristic(db.Model):
     DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'), primary_key=True)
     ContextCharacteristicID = db.Column(db.Integer, db.ForeignKey('ContextCharacteristics.id'), primary_key=True)
 
+# OptionDilemmaRelations table
+class OptionDilemmaRelation(db.Model):
+    __tablename__ = 'OptionDilemmaRelations'
+    id = db.Column(db.Integer, primary_key=True)
+    OptionID = db.Column(db.Integer, db.ForeignKey('Options.id'))
+    DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'))
+    RelationType = db.Column(db.Enum('OptionFor', 'ConsequenceOf'))
+
 # Combined User table
 class User(db.Model):
     __tablename__ = 'Users'
