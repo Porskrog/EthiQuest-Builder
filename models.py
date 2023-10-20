@@ -11,8 +11,8 @@ class Dilemma(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(500))
 
-    # Relationship to the Options table
-    options = db.relationship('Option', back_populates='dilemma')
+    # Relationship to the OptionDilemmaRelations table
+    option_dilemma_relations = db.relationship('OptionDilemmaRelation', backref='dilemma', lazy=True)
 
 # Options table
 class Option(db.Model):
@@ -21,10 +21,9 @@ class Option(db.Model):
     text = db.Column(db.String(500))
     pros = db.Column(db.String(500))
     cons = db.Column(db.String(500))
-    DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'))
 
-    # Relationship to the Dilemmas table
-    dilemma = db.relationship('Dilemma', back_populates='options')
+    # Relationship to the OptionDilemmaRelations table
+    option_dilemma_relations = db.relationship('OptionDilemmaRelation', backref='option', lazy=True)
 
 # ContextCharacteristics table
 class ContextCharacteristic(db.Model):
