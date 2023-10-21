@@ -231,7 +231,8 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
     base_prompt = "Please generate an ethical and leadership dilemma related to program management."
     
     # Decide whether to make the new dilemma consequential of the former dilemma
-    make_consequential = choice([True, False])
+    # make_consequential = choice([True, False])
+    make_consequential = choice([True, True])
 
     # Generate the prompt for GPT-4
     base_prompt = "Please generate an ethical and leadership dilemma related to program management."
@@ -601,7 +602,7 @@ def store_user_choice():
         logging.error(f"Database commit failed: {e}")
         return jsonify({"status": "failure", 'message': 'Database commit failed'}), 500
 
-    return jsonify({"status": "failure", 'message': 'User choice stored successfully'}), 200
+    return jsonify({"status": "success", 'message': 'User choice stored successfully'}), 200
 
 
 if __name__ == '__main__':
