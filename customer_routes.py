@@ -55,6 +55,8 @@ def get_or_create_user(cookie_id):
 
 # Function to add a new Option-Dilemma relation
 def add_option_dilemma_relation(option_id, dilemma_id, relation_type):
+    # Example usage when a new dilemma is generated as a consequence of an option
+    # add_option_dilemma_relation(chosen_option_id, new_dilemma_id, 'ConsequenceOf')
     new_relation = OptionDilemmaRelation(
         OptionID=option_id,
         DilemmaID=dilemma_id,
@@ -67,9 +69,6 @@ def add_option_dilemma_relation(option_id, dilemma_id, relation_type):
     except Exception as e:
         db.session.rollback()
         logging.error(f"An error occurred when adding a new option dilemma relation: {e}")  
-
-# Example usage when a new dilemma is generated as a consequence of an option
-# add_option_dilemma_relation(chosen_option_id, new_dilemma_id, 'ConsequenceOf')
 
 
 # Function to add a new dilemma and options to the database
@@ -126,7 +125,7 @@ def fetch_unviewed_dilemmas(user_id):
         return None
     
     # Otherwise, return a random unviewed dilemma
-    logging.info(f"200 OK: Successfully fected unviesed dilemmas for the user: {user_id}")
+    logging.info(f"200 OK: Successfully fected unviewed dilemmas for the user: {user_id}")
     return choice(unviewed_dilemmas)
 
 
@@ -285,6 +284,7 @@ def fetch_related_options(dilemma_id):
     logging.info(f"200 OK: Successfully fetched the related options to dilemma. Dilemma ID: {dilemma_id}, Options: {related_options}")
     return related_options
 
+
 def prepare_dilemma_json_response(dilemma, related_options):
     # Prepare response
     dilemma_data = {
@@ -402,6 +402,24 @@ def handle_paying_user(user_id):
     return selected_dilemma, next_dilemmas, None
 
 
+def mark_dilemma_as_viewed(user_id, dilemma_id):
+    # Check if this dilemma has been viewed by this user before
+    viewed = ViewedDilemma.query.filter_by(user_id=user_id, dilemma_id=dilemma_id).first()
+    if viewed:
+        return "Dilemma has been viewed before by this user", 409
+    
+    # If not viewed, add to the ViewedDilemmas table
+    new_view = ViewedDilemma(user_id=user_id, dilemma_id=dilemma_id)
+    try:
+        db.session.add(new_view)
+        db.session.commit()
+        logging.info(f"200 OK: Successfully marked dilemma as viewed. User ID: {user_id}, Dilemma ID: {dilemma_id}")
+        return "Dilemma marked as viewed", 201
+    except Exception as e:
+        logging.error(f"Error while inserting into ViewedDilemmas: {e}")
+        db.session.rollback()
+        return "Internal Server Error", 500
+
 ######################################################################################################
 #                                                                                                    #
 #                                                                                                    #
@@ -420,12 +438,12 @@ logging.basicConfig(level=logging.INFO)  # Sets up basic logging
 @customer_bp.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
     logging.info(f"Received request to mark dilemma {dilemma_id} as viewed")
-
+    
     cookie_id = request.json.get('cookie_id')
-
+    
     # Try to fetch the user by cookie ID
     user = User.query.filter_by(cookie_id=cookie_id).first()
-
+    
     # If the user does not exist, create a new one
     if user is None:
         user = User(cookie_id=cookie_id)
@@ -437,22 +455,8 @@ def view_dilemma(dilemma_id):
 
     logging.info(f"User ID from request: {user_id}")
 
-    # Check if this dilemma has been viewed by this user before
-    viewed = ViewedDilemma.query.filter_by(user_id=user_id, dilemma_id=dilemma_id).first()
-    if viewed:
-        return jsonify({"status": "failure", "message": "Dilemma has been viewed before by this user"}), 409
-
-    # If not viewed, add to the ViewedDilemmas table
-    new_view = ViewedDilemma(user_id=user_id, dilemma_id=dilemma_id)
-    try:
-        db.session.add(new_view)
-        db.session.commit()
-    except Exception as e:
-        logging.error(f"Error while inserting into ViewedDilemmas: {e}")
-        db.session.rollback()
-        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
-    
-    return jsonify({"status": "failure", "message": "Dilemma marked as viewed"}), 201
+    message, status_code = mark_dilemma_as_viewed(user_id, dilemma_id)
+    return jsonify({"status": "success" if status_code == 201 else "failure", "message": message}), status_code
 
 
 #####################################################################
@@ -508,13 +512,15 @@ def get_random_dilemma():
 
         # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes for free users and paying users
         try:
-            new_view = ViewedDilemma(user_id=user.id, dilemma_id=selected_dilemma.id)
-            db.session.add(new_view)
-            db.session.commit()
-
+            message, status_code = mark_dilemma_as_viewed(user.id, selected_dilemma.id)
+            if status_code != 201:
+                return jsonify({"status": "failure", "message": message}), status_code
+        
             # Invalidate cache here after adding a new viewed dilemma
             cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user.id)
 
+            return jsonify({"status": "success" if status_code == 201 else "failure", "message": message}), status_code
+        
         except Exception as e:
             logging.error(f"An error occurred when updating ViewedDilemma. Likely it already existed as viewed: {e}")
             return jsonify({"status": "failure", "message": "Internal Server Error when updating ViewedDilemma"}), 500
@@ -525,8 +531,6 @@ def get_random_dilemma():
         # Prepare and return JSON response using utility function 
         logging.info(f"200 OK: Successfully returned dilemma for user {user.id}")
         return prepare_dilemma_json_response(selected_dilemma, related_options)
-
-
 
     except KeyError as e:
         logging.error(f"KeyError: {e}")
