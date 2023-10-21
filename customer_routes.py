@@ -66,7 +66,7 @@ def add_option_dilemma_relation(option_id, dilemma_id, relation_type):
         logging.info(f"200 OK: Successfully added a new option-dilemma relation. Dilemma ID: {dilemma_id}, Option ID: {option_id}, Relation Type: {relation_type}")
     except Exception as e:
         db.session.rollback()
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred when adding a new option dilemma relation: {e}")  
 
 # Example usage when a new dilemma is generated as a consequence of an option
 # add_option_dilemma_relation(chosen_option_id, new_dilemma_id, 'ConsequenceOf')
@@ -77,30 +77,25 @@ def add_new_dilemma_and_options_to_db(context_list, description, options):
     new_dilemma = Dilemma(question=description)
     db.session.add(new_dilemma)
     db.session.commit()
+    logging.info(f"200 OK: Successfully added new dilemma.")
 
     for opt in options:
         # Convert pros and cons lists to comma-separated strings
         new_option = Option(
             text=opt['text'],
             pros=', '.join(opt['pros']),
-            cons=', '.join(opt['cons']),
-            DilemmaID=new_dilemma.id
+            cons=', '.join(opt['cons'])
         )
         try:
             db.session.add(new_option)
             db.session.commit()
+            logging.info(f"200 OK: Successfully added new option.")
         except Exception as e:
             db.session.rollback()
-            print(f"An error occurred: {e}")
+            logging.error(f"An error occurred when adding a new dilemma and option to the DB: {e}")  
 
-        # Add a new entry in the OptionDilemmaRelation table
-        new_relation = OptionDilemmaRelation(DilemmaID=new_dilemma.id, OptionID=new_option.id, RelationType='OptionFor')
-        try:
-            db.session.add(new_relation)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"An error occurred: {e}")
+        # Use the utility function to add a new entry in the OptionDilemmaRelation table
+        add_option_dilemma_relation(new_option.id, new_dilemma.id, 'OptionFor')
 
     for characteristic in context_list:
         existing_characteristic = ContextCharacteristic.query.filter_by(name=characteristic).first()
@@ -145,7 +140,7 @@ def fetch_priority_unviewed_dilemmas(user_id):
 
     if last_choice:
         # If the user has made a choice before, fetch dilemmas that are consequences of that choice
-        related_dilemmas = OptionDilemmaRelation.query.filter_by(OptionID=last_choice.OptionID, RelationType='consequence').all()
+        related_dilemmas = OptionDilemmaRelation.query.filter_by(OptionID=last_choice.OptionID, RelationType='ConsequenceOf').all()
         priority_dilemma_ids = [relation.DilemmaID for relation in related_dilemmas]
         
         # Fetch these dilemmas from the Dilemma table if they haven't been viewed yet
@@ -325,22 +320,6 @@ def fetch_consequential_dilemma(option_id):
         return None
 
 
-
-def mark_as_consequence(dilemma_id, option_id):
-    try:
-        # Create a new entry in the OptionDilemmaRelation table
-        new_relation = OptionDilemmaRelation(DilemmaID=dilemma_id, OptionID=option_id, RelationType='ConsequenceOf')
-
-        # Add the new relation to the database
-        db.session.add(new_relation)
-        db.session.commit()
-        logging.info(f"200 OK: Successfully marked the dilemma as a consequence of an option. Dilemma ID: {dilemma_id}, Option ID: {option_id}")
-        return True
-    except Exception as e:
-        print(f"An error occurred while marking the dilemma as a consequence: {e}")
-        return False
-
-
 @cache.memoize(60)  # Cache for 60 seconds
 def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
     try:
@@ -365,7 +344,9 @@ def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
                 new_dilemma = add_new_dilemma_and_options_to_db(context_list, description, generated_options)
                 
                 # Mark the new dilemma as a consequence of the current option
-                mark_as_consequence(new_dilemma.id, option.id)
+                # Use the utility function to add a new entry in the OptionDilemmaRelation table
+                add_option_dilemma_relation(option.id, new_dilemma.id, 'ConsequenceOf')
+
                 
                 # Add the new dilemma to the dictionary
                 consequential_dilemmas[option.id] = new_dilemma
@@ -377,7 +358,7 @@ def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
         return consequential_dilemmas
     
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.exception(f"An error occurred: {e}")
         return None
 
 
