@@ -491,6 +491,8 @@ def get_options(DilemmaID):
 
 @customer_bp.route('/get_random_dilemma', methods=['POST'])  # Changed to POST to get user details
 def get_random_dilemma():
+    response = {"status": "failure", "message": "Unknown error"}
+    status_code = 500
     try:
         data = request.get_json()
         cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
@@ -520,23 +522,17 @@ def get_random_dilemma():
 
         # Prepare and return JSON response using utility function 
         logging.info(f"200 OK: Successfully returned dilemma for user {user.id}")
-        respnnse = prepare_dilemma_json_response(selected_dilemma, related_options)
+        response = prepare_dilemma_json_response(selected_dilemma, related_options)
         status_code = 200
 
         # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes for free users and paying users
-        try:
-            message, status_code = mark_dilemma_as_viewed(user.id, selected_dilemma.id)
-            if status_code != 201:
-                return jsonify({"status": "failure", "message": message}), status_code
-        
-            # Invalidate cache here after adding a new viewed dilemma
-            cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user.id)
-
-            return jsonify({"status": "success" if status_code == 201 else "failure", "message": message}), status_code
-        
-        except Exception as e:
-            logging.error(f"An error occurred when updating ViewedDilemma. Likely it already existed as viewed: {e}")
-            return jsonify({"status": "failure", "message": "Internal Server Error when updating ViewedDilemma"}), 500
+     
+        message, status_code = mark_dilemma_as_viewed(user.id, selected_dilemma.id)
+        if status_code != 201:
+            return jsonify({"status": "failure", "message": message}), status_code
+    
+        # Invalidate cache here after adding a new viewed dilemma
+        cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user.id)
 
     except KeyError as e:
         logging.error(f"KeyError: {e}")
