@@ -274,7 +274,7 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
 def fetch_related_options(dilemma_id):
     related_options = []
     # Fetch the related options from the database
-    relations = OptionDilemmaRelation.query.filter_by(DilemmaID=dilemma_id, RelationType='OptionOf').all()
+    relations = OptionDilemmaRelation.query.filter_by(DilemmaID=dilemma_id, RelationType='OptionFor').all()
     
     for relation in relations:
         option = Option.query.get(relation.OptionID)
