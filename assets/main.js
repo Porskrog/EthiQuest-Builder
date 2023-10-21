@@ -91,7 +91,7 @@ jQuery(document).ready(function($) {
                 $('#optionDetailsDisplay').html('');
 
                 // Mark this dilemma as viewed
-                markDilemmaAsViewed(dilemma.id, userCookie);
+                // markDilemmaAsViewed(dilemma.id, userCookie);
             },
             error: function(error) {
                 if (error.status === 404) {

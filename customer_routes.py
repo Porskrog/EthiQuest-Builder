@@ -543,8 +543,8 @@ def get_random_dilemma():
         response = {"status": "failure", "message": "Internal Server Error"}
         status_code = 500
     
-    return jsonify(response), status_code  # Return the response and status code at the end of the function
-    
+    return response  # Directly return the response
+
 
 #####################################################################
 #   Get Option Details API endpoint for ALL users (free and paying) # 
