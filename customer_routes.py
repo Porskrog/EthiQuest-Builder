@@ -29,6 +29,7 @@ def get_customer_data():
 def get_viewed_dilemmas(user_id):
     viewed_dilemmas = ViewedDilemma.query.filter_by(user_id=user_id).all()
     viewed_dilemma_ids = [dilemma.dilemma_id for dilemma in viewed_dilemmas]
+    logging.info(f"200 OK: Successfully got the list of viewed dilemmas.")
     return viewed_dilemma_ids
 
 # Fetch the last dilemma and option chosen by this user from the database.
@@ -37,6 +38,7 @@ def get_last_dilemma_and_option(user_id):
     if last_choice:
         last_dilemma = Dilemma.query.get(last_choice.DilemmaID)
         last_option = Option.query.get(last_choice.OptionID)
+        logging.info(f"200 OK: Successfully fetched the last dilemma and option chosen by the user. User ID: {user_id}")
         return last_dilemma.question, last_option.text  # Assuming 'question' and 'text' are the relevant fields.
     else:
         return None, None
@@ -48,6 +50,7 @@ def get_or_create_user(cookie_id):
         user = User(cookie_id=cookie_id)
         db.session.add(user)
         db.session.commit()
+        logging.info(f"200 OK: Successfully got or created a user. User ID: {user}")
     return user
 
 # Function to add a new Option-Dilemma relation
@@ -60,6 +63,7 @@ def add_option_dilemma_relation(option_id, dilemma_id, relation_type):
     try:
         db.session.add(new_relation)
         db.session.commit()
+        logging.info(f"200 OK: Successfully added a new option-dilemma relation. Dilemma ID: {dilemma_id}, Option ID: {option_id}, Relation Type: {relation_type}")
     except Exception as e:
         db.session.rollback()
         print(f"An error occurred: {e}")
@@ -89,7 +93,7 @@ def add_new_dilemma_and_options_to_db(context_list, description, options):
             db.session.rollback()
             print(f"An error occurred: {e}")
 
-        # Add a new entry in the DilemmaOptionRelation table
+        # Add a new entry in the OptionDilemmaRelation table
         new_relation = OptionDilemmaRelation(DilemmaID=new_dilemma.id, OptionID=new_option.id, RelationType='OptionFor')
         try:
             db.session.add(new_relation)
@@ -111,6 +115,8 @@ def add_new_dilemma_and_options_to_db(context_list, description, options):
         new_dilemma_context = DilemmasContextCharacteristic(DilemmaID=new_dilemma.id, ContextCharacteristicID=char_id)
         db.session.add(new_dilemma_context)
         db.session.commit()
+
+        logging.info(f"200 OK: Successfully added new dilemma, context characteristics and options to the database.")
     return new_dilemma
 
 
@@ -125,6 +131,7 @@ def fetch_unviewed_dilemmas(user_id):
         return None
     
     # Otherwise, return a random unviewed dilemma
+    logging.info(f"200 OK: Successfully fected unviesed dilemmas for the user: {user_id}")
     return choice(unviewed_dilemmas)
 
 
@@ -154,6 +161,7 @@ def fetch_priority_unviewed_dilemmas(user_id):
     # Combine the lists, putting the priority dilemmas at the front
     combined_dilemmas = priority_dilemmas + all_unviewed_dilemmas
 
+    logging.info(f"200 OK: Successfully fetched unviewed priority dilemmas for the user: {user_id}")
     return combined_dilemmas
 
 
@@ -174,6 +182,7 @@ def call_gpt4_api(full_prompt):
         print(f"An error occurred: {e}")
         return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
     
+    logging.info(f"200 OK: Successfully called GPT-4 API.")
     return generated_text
 
 
@@ -213,6 +222,7 @@ def parse_gpt4_response(generated_text):
         print(f"Error while parsing the generated text: {e}")
         return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
 
+    logging.info(f"200 OK: Successfully parsed the dilemma from GPT-4 as dilemma and options. Dilemma: {dilemma}, Options: {options}")
     return dilemma, options
 
 
@@ -260,6 +270,7 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
         parsed_response = parse_gpt4_response(response)
 
         # Return the parsed response        
+        logging.info(f"200 OK: Successfully generated a new dilemma with GPT-4: {parsed_response}")
         return parsed_response
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -275,7 +286,8 @@ def fetch_related_options(dilemma_id):
         option = Option.query.get(relation.OptionID)
         if option:
             related_options.append(option)
-    
+
+    logging.info(f"200 OK: Successfully fetched the related options to dilemma. Dilemma ID: {dilemma_id}, Options: {related_options}")
     return related_options
 
 def prepare_dilemma_json_response(dilemma, related_options):
@@ -292,6 +304,7 @@ def prepare_dilemma_json_response(dilemma, related_options):
             } for option in related_options
         ]
     }
+    logging.info(f"200 OK: Successfully returned the dilemma to the front end: {dilemma_data}")
     return jsonify({'dilemma': dilemma_data}), 200
 
 
@@ -303,6 +316,7 @@ def fetch_consequential_dilemma(option_id):
         if relation:
             # Fetch the dilemma using the DilemmaID found in the relation
             dilemma = Dilemma.query.get(relation.DilemmaID)
+            logging.info(f"200 OK: Successfully fetched the consequential dilemma. Dilemma: {dilemma}, Option ID: {option_id}")
             return dilemma
         else:
             return None
@@ -315,11 +329,12 @@ def fetch_consequential_dilemma(option_id):
 def mark_as_consequence(dilemma_id, option_id):
     try:
         # Create a new entry in the OptionDilemmaRelation table
-        new_relation = OptionDilemmaRelation(DilemmaID=dilemma_id, OptionID=option_id, RelationType='consequence')
+        new_relation = OptionDilemmaRelation(DilemmaID=dilemma_id, OptionID=option_id, RelationType='ConsequenceOf')
 
         # Add the new relation to the database
         db.session.add(new_relation)
         db.session.commit()
+        logging.info(f"200 OK: Successfully marked the dilemma as a consequence of an option. Dilemma ID: {dilemma_id}, Option ID: {option_id}")
         return True
     except Exception as e:
         print(f"An error occurred while marking the dilemma as a consequence: {e}")
@@ -357,7 +372,8 @@ def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
             else:
                 # Add the existing consequential dilemma to the dictionary
                 consequential_dilemmas[option.id] = consequential_dilemma
-                
+ 
+        logging.info(f"200 OK: Successfully fetched or generated consequential dilemmas for this Dilemma ID: {dilemma_id}")
         return consequential_dilemmas
     
     except Exception as e:
@@ -375,8 +391,9 @@ def handle_free_user(user_id):
     # Pick a random dilemma from the list of unviewed dilemmas
     selected_dilemma = choice(unviewed_dilemmas)
     cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user_id)
-    return selected_dilemma, None, None
 
+    logging.info(f"200 OK: Successfully called free user handling.")
+    return selected_dilemma, None, None
 
 
 def handle_paying_user(user_id):
@@ -398,6 +415,7 @@ def handle_paying_user(user_id):
     next_dilemmas = fetch_or_generate_consequential_dilemmas(selected_dilemma.id, user_id)
     cache.set(f"consequential_dilemmas_{user_id}", next_dilemmas)
 
+    logging.info(f"200 OK: Successfully called paying user handling")
     return selected_dilemma, next_dilemmas, None
 
 
@@ -490,6 +508,10 @@ def get_random_dilemma():
             return jsonify({"status": "failure", 'message': 'Missing cookie_id'}), 400
 
         user = get_or_create_user(cookie_id) # Get or create the user  
+        if not user:
+            logging.error("404 Not Found: User could not be created")
+            return jsonify({"status": "failure", 'message': 'User not found'}), 404
+        
         unviewed_dilemmas = fetch_unviewed_dilemmas(user.id) # Fetch unviewed dilemmas for this user   
 
         if user.user_type == 'Paying':
@@ -518,8 +540,11 @@ def get_random_dilemma():
         related_options = fetch_related_options(selected_dilemma.id)  
 
         # Prepare and return JSON response using utility function 
-        return prepare_dilemma_json_response(selected_dilemma, related_options)  
-    
+        logging.info(f"200 OK: Successfully returned dilemma for user {user.id}")
+        return prepare_dilemma_json_response(selected_dilemma, related_options)
+
+
+
     except KeyError as e:
         logging.error(f"KeyError: {e}")
         return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
