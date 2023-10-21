@@ -33,15 +33,23 @@ def get_viewed_dilemmas(user_id):
     return viewed_dilemma_ids
 
 # Fetch the last dilemma and option chosen by this user from the database.
-def get_last_dilemma_and_option(user_id):
+def get_last_dilemma_and_option(user_id, return_choice_object=False):
     last_choice = UserChoice.query.filter_by(UserID=user_id).order_by(UserChoice.Timestamp.desc()).first()
     if last_choice:
         last_dilemma = Dilemma.query.get(last_choice.DilemmaID)
         last_option = Option.query.get(last_choice.OptionID)
         logging.info(f"200 OK: Successfully fetched the last dilemma and option chosen by the user. User ID: {user_id}")
+        
+        if return_choice_object:
+            return last_dilemma.question, last_option.text, last_choice  # Return the last_choice object as well.
+        
         return last_dilemma.question, last_option.text  # Assuming 'question' and 'text' are the relevant fields.
     else:
+        if return_choice_object:
+            return None, None, None  # Return None for the last_choice object as well.
+        
         return None, None
+
 
 # Function to get or create a user
 def get_or_create_user(cookie_id):
@@ -506,14 +514,29 @@ def get_random_dilemma():
         if not user:
             logging.error("404 Not Found: User could not be created")
             return jsonify({"status": "failure", 'message': 'User not found'}), 404
-        
-        unviewed_dilemmas = fetch_unviewed_dilemmas(user.id) # Fetch unviewed dilemmas for this user   
 
+        # NEW: Fetch the last choice made by this user
+        last_dilemma, last_option, last_choice = get_last_dilemma_and_option(user.id, return_choice_object=True)
+
+        # NEW: Initialize as None
+        selected_dilemma = None
+        error_response = None
+
+        # NEW: If a last choice exists, look for a consequential dilemma
+        consequential_dilemma = None
+        if last_choice:
+            consequential_dilemma = fetch_consequential_dilemma(last_choice.OptionID)
+
+        # The existing logic to fetch a random dilemma
         if user.user_type == 'Paying':
             selected_dilemma, next_dilemmas, error_response = handle_paying_user(user.id)
         
         else:   # Free user
             selected_dilemma, _, error_response = handle_free_user(user.id)
+
+        # If a consequential dilemma was found, overwrite the selected_dilemma
+        if consequential_dilemma:
+            selected_dilemma = consequential_dilemma
 
         if error_response:
             return jsonify(error_response), 404  # or other status code based on the error
