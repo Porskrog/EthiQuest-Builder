@@ -388,11 +388,12 @@ def handle_free_user(user_id):
     if not unviewed_dilemmas:
         return None, {"status": "failure", "message": "No new dilemmas available"}, 404
 
+    logging.info(f"200 OK: Successfully selected a dilemma for user  {user_id}.")
+
     # Pick a random dilemma from the list of unviewed dilemmas
     selected_dilemma = choice(unviewed_dilemmas)
     cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user_id)
 
-    logging.info(f"200 OK: Successfully called free user handling.")
     return selected_dilemma, None, None
 
 
@@ -408,6 +409,8 @@ def handle_paying_user(user_id):
     description = generated_dilemma['Description']
     selected_dilemma = add_new_dilemma_and_options_to_db(context_list, description, generated_options)
 
+    logging.info(f"200 OK: Successfully generated and stored a new dilemma for user {user_id}")
+
     # Invalidate cache here if you add a new dilemma
     cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user_id)
 
@@ -415,7 +418,6 @@ def handle_paying_user(user_id):
     next_dilemmas = fetch_or_generate_consequential_dilemmas(selected_dilemma.id, user_id)
     cache.set(f"consequential_dilemmas_{user_id}", next_dilemmas)
 
-    logging.info(f"200 OK: Successfully called paying user handling")
     return selected_dilemma, next_dilemmas, None
 
 
