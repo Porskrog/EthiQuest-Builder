@@ -267,22 +267,27 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
         logging.info(f"200 OK: Successfully generated a new dilemma with GPT-4: {parsed_response}")
         return parsed_response
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.exception(f"An error occurred: {e}")
         return None
 
 
 def fetch_related_options(dilemma_id):
     related_options = []
-    # Fetch the related options from the database
-    relations = OptionDilemmaRelation.query.filter_by(DilemmaID=dilemma_id, RelationType='OptionFor').all()
-    
-    for relation in relations:
-        option = Option.query.get(relation.OptionID)
-        if option:
-            related_options.append(option)
+    try:
+        # Fetch the related options from the database
+        relations = OptionDilemmaRelation.query.filter_by(DilemmaID=dilemma_id, RelationType='OptionFor').all()
+        
+        for relation in relations:
+            option = Option.query.get(relation.OptionID)
+            if option:
+                related_options.append(option)
 
-    logging.info(f"200 OK: Successfully fetched the related options to dilemma. Dilemma ID: {dilemma_id}, Options: {related_options}")
-    return related_options
+        logging.info(f"200 OK: Successfully fetched the related options to dilemma. Dilemma ID: {dilemma_id}, Options: {related_options}")
+        return related_options
+
+    except Exception as e:
+        logging.exception(f"An error occurred: {e}")
+        return None
 
 
 def prepare_dilemma_json_response(dilemma, related_options):
@@ -316,7 +321,7 @@ def fetch_consequential_dilemma(option_id):
         else:
             return None
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.exception(f"An error occurred: {e}")
         return None
 
 
@@ -510,6 +515,14 @@ def get_random_dilemma():
         if error_response:
             return jsonify(error_response), 404  # or other status code based on the error
 
+        # Fetch related options using utility function 
+        related_options = fetch_related_options(selected_dilemma.id)  
+
+        # Prepare and return JSON response using utility function 
+        logging.info(f"200 OK: Successfully returned dilemma for user {user.id}")
+        respnnse = prepare_dilemma_json_response(selected_dilemma, related_options)
+        status_code = 200
+
         # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes for free users and paying users
         try:
             message, status_code = mark_dilemma_as_viewed(user.id, selected_dilemma.id)
@@ -525,19 +538,16 @@ def get_random_dilemma():
             logging.error(f"An error occurred when updating ViewedDilemma. Likely it already existed as viewed: {e}")
             return jsonify({"status": "failure", "message": "Internal Server Error when updating ViewedDilemma"}), 500
 
-        # Fetch related options using utility function 
-        related_options = fetch_related_options(selected_dilemma.id)  
-
-        # Prepare and return JSON response using utility function 
-        logging.info(f"200 OK: Successfully returned dilemma for user {user.id}")
-        return prepare_dilemma_json_response(selected_dilemma, related_options)
-
     except KeyError as e:
         logging.error(f"KeyError: {e}")
-        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
+        response = {"status": "failure", "message": "Internal Server Error"}
+        status_code = 500
     except Exception as e:
         logging.critical(f"An unexpected error occurred: {e}")
-        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
+        response = {"status": "failure", "message": "Internal Server Error"}
+        status_code = 500
+    
+    return jsonify(response), status_code  # Return the response and status code at the end of the function
     
 
 #####################################################################
