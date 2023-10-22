@@ -420,6 +420,7 @@ def mark_dilemma_as_viewed(user_id, dilemma_id):
     # Check if this dilemma has been viewed by this user before
     viewed = ViewedDilemma.query.filter_by(user_id=user_id, dilemma_id=dilemma_id).first()
     if viewed:
+        logging.warning(f"409 Conflict: Dilemma has been viewed before by this user. User ID: {user_id}, Dilemma ID: {dilemma_id}")
         return "Dilemma has been viewed before by this user", 409
     
     # If not viewed, add to the ViewedDilemmas table
@@ -525,13 +526,16 @@ def get_random_dilemma():
         # NEW: If a last choice exists, look for a consequential dilemma
         consequential_dilemma = None
         if last_choice:
+            logging.error("Fetching for consequential dilemma")
             consequential_dilemma = fetch_consequential_dilemma(last_choice.OptionID)
 
         # The existing logic to fetch a random dilemma
         if user.user_type == 'Paying':
+            logging.error("Call handle paying user")
             selected_dilemma, next_dilemmas, error_response = handle_paying_user(user.id)
         
         else:   # Free user
+            logging.error("Call handle free user")
             selected_dilemma, _, error_response = handle_free_user(user.id)
 
         # If a consequential dilemma was found, overwrite the selected_dilemma
