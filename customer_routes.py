@@ -4,7 +4,7 @@ from models import User, Dilemma, Option, UserChoice, ViewedDilemma, ContextChar
 from extensions import db
 from flask_cors import CORS
 from random import choice
-from sqlalchemy import desc # To get the last dilemma and option for a user
+from sqlalchemy import desc # To get the last dilemma and option for the user
 from app import limiter, cache  
 
 import os
