@@ -499,8 +499,8 @@ def get_options(DilemmaID):
 
 @limiter.limit("5 per minute") # Limit to 5 requests per minute
 
-@customer_bp.route('/get_random_dilemma', methods=['POST'])  # Changed to POST to get user details
-def get_random_dilemma():
+@customer_bp.route('/get_dilemma', methods=['POST'])  # Changed to POST to get user details
+def get_dilemma():
     response = {"status": "failure", "message": "Unknown error"}
     status_code = 500
     try:
@@ -526,16 +526,16 @@ def get_random_dilemma():
         # NEW: If a last choice exists, look for a consequential dilemma
         consequential_dilemma = None
         if last_choice:
-            logging.error("Fetching for consequential dilemma")
+            logging.info("Fetching for consequential dilemma")
             consequential_dilemma = fetch_consequential_dilemma(last_choice.OptionID)
 
         # The existing logic to fetch a random dilemma
         if user.user_type == 'Paying':
-            logging.error("Call handle paying user")
+            logging.info("Call handle paying user")
             selected_dilemma, next_dilemmas, error_response = handle_paying_user(user.id)
         
         else:   # Free user
-            logging.error("Call handle free user")
+            logging.info("Call handle free user")
             selected_dilemma, _, error_response = handle_free_user(user.id)
 
         # If a consequential dilemma was found, overwrite the selected_dilemma
