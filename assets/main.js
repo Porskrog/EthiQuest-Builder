@@ -66,7 +66,7 @@ jQuery(document).ready(function($) {
         let userCookie = getCookie("userCookie"); // Get the user cookie
         $.ajax({
             type: 'POST',
-            url: `${API_URL}/get_random_dilemma`,
+            url: `${API_URL}/get_dilemma`,
             data: JSON.stringify({ cookie_id: userCookie }),
             contentType: "application/json; charset=utf-8",
             success: function(response) {

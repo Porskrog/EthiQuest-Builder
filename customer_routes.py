@@ -494,6 +494,36 @@ def get_options(DilemmaID):
     return jsonify({'options': output})
 
 #####################################################################
+#   Get Toggles for Random and Consequential                        # 
+#####################################################################
+
+from flask import jsonify, request
+
+@customer_bp.route('/get_toggle_settings', methods=['GET'])
+def get_toggle_settings():
+    # Log the incoming request
+    logging.info("Received request to get toggles")
+
+    # Fetch the cookie ID from query parameters
+    cookie_id = request.args.get('user_id')
+
+    # Try to fetch the user by cookie ID
+    user = User.query.filter_by(cookie_id=cookie_id).first()
+
+    # If the user does not exist, create a new one
+    if user is None:
+        user = User(cookie_id=cookie_id)
+        db.session.add(user)
+        db.session.commit()
+
+    # Fetch the random and consequential fields from the user model
+    Random = user.Random
+    Consequential = user.Consequential
+
+    return jsonify({'random': Random, 'consequential': Consequential})
+
+
+#####################################################################
 #   Get Random Dilemma API endpoint for ALL users (free and paying) # 
 #####################################################################
 
