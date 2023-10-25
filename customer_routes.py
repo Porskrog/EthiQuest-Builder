@@ -500,7 +500,7 @@ def get_options(DilemmaID):
 
 from flask import jsonify, request
 
-@customer_bp.route('/get_toggle_settings', methods=['POST'])
+@customer_bp.route('/get_toggle_settings', methods=['GET'])
 def get_toggle_settings():
     # Log the incoming request
     logging.info("200 OK: Received request to get toggles")
