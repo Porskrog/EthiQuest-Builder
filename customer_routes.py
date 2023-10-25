@@ -6,10 +6,13 @@ from flask_cors import CORS
 from random import choice
 from sqlalchemy import desc # To get the last dilemma and option for the user
 from app import limiter, cache  
-
 import os
 import openai
 import json
+import logging
+from datetime import datetime
+
+logging.basicConfig(level=logging.INFO)  # Sets up basic logging
 
 api_key = os.environ.get('OPENAI_API_KEY')
 openai.api_key = api_key
@@ -442,9 +445,7 @@ def mark_dilemma_as_viewed(user_id, dilemma_id):
 #                                                                                                    #
 #                                                                                                    #     
 ######################################################################################################
-import logging
-
-logging.basicConfig(level=logging.INFO)  # Sets up basic logging
+######################################################################################################
 
 #####################################################################
 #   View Dilemma                                                    # 
@@ -452,7 +453,7 @@ logging.basicConfig(level=logging.INFO)  # Sets up basic logging
 
 @customer_bp.route('/view_dilemma/<int:dilemma_id>', methods=['POST'])
 def view_dilemma(dilemma_id):
-    logging.info(f"Received request to mark dilemma {dilemma_id} as viewed")
+    logging.info(f"200 OK: Received request to mark dilemma {dilemma_id} as viewed")
     
     cookie_id = request.json.get('cookie_id')
     
@@ -468,7 +469,7 @@ def view_dilemma(dilemma_id):
     # Now user.id will contain the ID, whether the user was just created or already existed
     user_id = user.id
 
-    logging.info(f"User ID from request: {user_id}")
+    logging.info(f"200 OK: User ID from request: {user_id}")
 
     message, status_code = mark_dilemma_as_viewed(user_id, dilemma_id)
     return jsonify({"status": "success" if status_code == 201 else "failure", "message": message}), status_code
@@ -499,10 +500,10 @@ def get_options(DilemmaID):
 
 from flask import jsonify, request
 
-@customer_bp.route('/get_toggle_settings', methods=['GET'])
+@customer_bp.route('/get_toggle_settings', methods=['POST'])
 def get_toggle_settings():
     # Log the incoming request
-    logging.info("Received request to get toggles")
+    logging.info("200 OK: Received request to get toggles")
 
     # Fetch the cookie ID from query parameters
     cookie_id = request.args.get('user_id')
@@ -562,7 +563,8 @@ def get_dilemma():
         # The existing logic to fetch a random dilemma
         if user.user_type == 'Paying':
             logging.info("Call handle paying user")
-            selected_dilemma, next_dilemmas, error_response = handle_paying_user(user.id)
+            if consequential_dilemma is None:
+                 selected_dilemma, next_dilemmas, error_response = handle_paying_user(user.id)
         
         else:   # Free user
             logging.info("Call handle free user")
