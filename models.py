@@ -53,6 +53,8 @@ class User(db.Model):
     cookie_id = db.Column(db.String(100), unique=True, nullable=True)  # For anonymous users
     LastVisit = db.Column(db.DateTime, default=datetime.utcnow)
     user_type = db.Column(db.String(50), nullable=False, default='Free')  # default is 'Free'
+    Random = db.Column(db.String(5), default=True)
+    Consequential = db.Column(db.String(5), default=False)
 
     # Relationship to UserChoices
     choices = db.relationship('UserChoice', back_populates='user')
