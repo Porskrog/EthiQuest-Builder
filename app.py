@@ -15,7 +15,7 @@ cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, resources={r"/customer/*": {"origins": "https://flow.camp"}})
     limiter.init_app(app)
     cache.init_app(app)
 
