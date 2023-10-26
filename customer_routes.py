@@ -9,6 +9,7 @@ from app import limiter, cache
 import os
 import openai
 import json
+import time
 import logging
 from datetime import datetime
 
@@ -172,7 +173,8 @@ def fetch_priority_unviewed_dilemmas(user_id):
 
 def call_gpt4_api(full_prompt):
     try:
-
+        # Record the time before the API call
+        start_time = time.time()
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
@@ -182,6 +184,11 @@ def call_gpt4_api(full_prompt):
             max_tokens=250
         )
         generated_text = response['choices'][0]['message']['content']
+        # Record the time after the API call
+        end_time = time.time()
+        # Calculate and log the duration
+        duration = end_time - start_time
+        logging.info(f"GPT-4 API call took {duration} seconds.")
         print(f"Generated text: {generated_text}")  # Debugging line
     except Exception as e:
         print(f"An error occurred: {e}")
