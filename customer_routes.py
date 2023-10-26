@@ -363,7 +363,6 @@ def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
                 # Mark the new dilemma as a consequence of the current option
                 # Use the utility function to add a new entry in the OptionDilemmaRelation table
                 add_option_dilemma_relation(option.id, new_dilemma.id, 'ConsequenceOf')
-
                 
                 # Add the new dilemma to the dictionary
                 consequential_dilemmas[option.id] = new_dilemma
@@ -585,8 +584,7 @@ def get_dilemma():
         response = prepare_dilemma_json_response(selected_dilemma, related_options)
         status_code = 200
 
-        # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes for free users and paying users
-     
+        # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes
         message, status_code = mark_dilemma_as_viewed(user.id, selected_dilemma.id)
         if status_code != 201:
             return jsonify({"status": "failure", "message": message}), status_code
