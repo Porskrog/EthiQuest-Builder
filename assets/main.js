@@ -1,6 +1,54 @@
 <script type="text/javascript"> 
 jQuery(document).ready(function($) {
 
+
+    // Fetch initial toggle settings from backend based on user.id
+    // Replace with your actual API call
+    $.ajax({
+        type: 'GET',
+        url: `${API_URL}/get_toggle_settings`,
+        data: { user_id: userCookie }, // assuming userCookie is your user id
+        success: function(response) {
+            // Set initial states
+            if (response.random) {
+                $('#randomToggle').css({ left: '60px' }).text('ON');
+            }
+            if (response.consequential) {
+                $('#consequentialToggle').css({ left: '60px' }).text('ON');
+            }
+        }
+    });
+
+    // Function to update toggle setting in the backend
+    function updateToggleSetting(toggleName, state) {
+        // Replace with your actual API call
+        $.ajax({
+            type: 'POST',
+            url: `${API_URL}/update_toggle_setting`,
+            data: JSON.stringify({
+                user_id: userCookie, // assuming userCookie is your user id
+                toggle_name: toggleName,
+                state: state
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                console.log("Toggle setting updated:", response);
+            }
+        });
+    }
+
+    // Event listeners for toggle buttons
+    $('.toggle-button').click(function() {
+        const toggleId = $(this).attr('id');
+        if ($(this).css('left') === '60px') {
+            $(this).css({ left: '0px' }).text('OFF');
+            updateToggleSetting(toggleId, false);
+        } else {
+            $(this).css({ left: '60px' }).text('ON');
+            updateToggleSetting(toggleId, true);
+        }
+    });
+
     let currentDilemmaID = null; 
 
     // Function to generate a unique ID
