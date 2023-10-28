@@ -26,7 +26,6 @@ CORS(customer_bp, origins=["https://flow.camp"])
 ######################################################################################################
 
 
-
 @customer_bp.route('/get_data')
 def get_customer_data():
     return jsonify({"data": "customer data"})
@@ -45,6 +44,7 @@ def get_or_create_user(cookie_id):
             logging.error(f"Database commit failed: {e}")
             return None
     return user
+
 
 def handle_free_user(user_id):
     unviewed_dilemmas = fetch_unviewed_dilemmas(user_id)
@@ -126,6 +126,7 @@ def get_toggle_settings():
 ######################################################################################################
 #  2. Update Toggle Setting                                                                          #
 ######################################################################################################
+
 @customer_bp.route('/update_toggle_settings', methods=['POST'])
 def update_toggle_settings():
     # Log the incoming request
@@ -158,14 +159,26 @@ def update_toggle_settings():
 ######################################################################################################
 #  3. Get Unviewed Dilemmas                HALLO EJ SET IGENNEM                                      #
 ######################################################################################################
-@customer_bp.route('/get_unviewed_dilemmas/<int:user_id>', methods=['GET'])
-def get_unviewed_dilemmas(user_id):
+
+@customer_bp.route('/get_unviewed_dilemmas', methods=['POST'])
+def get_unviewed_dilemmas():
     # Log the incoming request
     logging.info(f"200 OK: Received request to get unviewed dilemmas for user {user_id}")
 
-    # Fetch the unviewed dilemmas for this user
-    unviewed_dilemmas = fetch_unviewed_dilemmas(user_id)
+    data = request.get_json()
+    user_id = data.get('user_id', None)
+    cookie_id = data.get('cookie_id', None)
 
+    if not user_id and not cookie_id:
+        return jsonify({"status": "failure", 'message': 'Missing user_id or cookie_id'}), 400
+
+    if user_id:
+        # Fetch the unviewed dilemmas for this user
+        unviewed_dilemmas = fetch_unviewed_dilemmas(user_id)
+    elif cookie_id:
+        # Fetch the unviewed dilemmas for this user
+        unviewed_dilemmas = fetch_unviewed_dilemmas(cookie_id)
+        
     # If there are no unviewed dilemmas, handle that case
     if not unviewed_dilemmas:
         return jsonify({"status": "failure", "message": "No new dilemmas available"}), 404

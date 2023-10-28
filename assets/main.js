@@ -1,6 +1,51 @@
 <script type="text/javascript"> 
 jQuery(document).ready(function($) {
 
+    // Replace this with your deployed API URL
+    const API_URL = 'https://ethiquest-builder.onrender.com/customer';
+
+    let currentDilemmaID = null; 
+
+    // Function to generate a unique ID
+    function generateUniqueID() {
+        return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
+            const r = (Math.random() * 16) | 0,
+                v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    }
+
+    // Function to get a cookie
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+    // Function to set a cookie
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        let expires = "expires="+d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+        // Check if the user cookie exists; if not, create one
+        let userCookie = getCookie("userCookie");
+        if (userCookie === "") {
+            userCookie = generateUniqueID();
+            setCookie("userCookie", userCookie, 365);
+        }
 
     // Fetch initial toggle settings from backend based on user.id
     // Replace with your actual API call
@@ -49,56 +94,17 @@ jQuery(document).ready(function($) {
         }
     });
 
-    let currentDilemmaID = null; 
 
-    // Function to generate a unique ID
-    function generateUniqueID() {
-        return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, function(c) {
-            const r = (Math.random() * 16) | 0,
-                v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-    }
-
-    function getCookie(cname) {
-        let name = cname + "=";
-        let decodedCookie = decodeURIComponent(document.cookie);
-        let ca = decodedCookie.split(';');
-        for(let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) === ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) === 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-        return "";
-    }
-
-    function setCookie(cname, cvalue, exdays) {
-        const d = new Date();
-        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        let expires = "expires="+d.toUTCString();
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-    }
-
-        // Check if the user cookie exists; if not, create one
-        let userCookie = getCookie("userCookie");
-        if (userCookie === "") {
-            userCookie = generateUniqueID();
-            setCookie("userCookie", userCookie, 365);
-        }
-
-        // Replace this with your deployed API URL
-        const API_URL = 'https://ethiquest-builder.onrender.com/customer';
-
+    // Function to fetch unviewed dilemmas
     function fetchUnviewedDilemmas(userCookie, callback) {
         $.ajax({
-            type: 'GET',
+            type: 'POST',
             url: `${API_URL}/get_unviewed_dilemmas`, // Replace with your actual backend URL
-            data: {
-                user_cookie: userCookie
+            data: JSON.stringify({
+                user_id: userId,  // Include this only if you have a user_id
+                cookie_id: userCookie  // Include this only if you have a cookie_id
+            }),
+            contentType: "application/json; charset=utf-8",
             },
             success: function(response) {
                 callback(null, response.dilemmas);
@@ -110,6 +116,7 @@ jQuery(document).ready(function($) {
         });
     }
 
+    // Function to fetch random dilemma
     function fetchRandomDilemma() {
         let userCookie = getCookie("userCookie"); // Get the user cookie
         $.ajax({
