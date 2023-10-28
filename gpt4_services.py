@@ -3,7 +3,7 @@ import os
 import time
 from random import choice
 from flask import jsonify
-from dilimma_services import get_last_dilemma_and_option
+from dilemma_services import get_last_dilemma_and_option
 import openai
 
 # Initialize logging
