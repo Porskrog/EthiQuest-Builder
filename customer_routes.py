@@ -172,13 +172,13 @@ def update_toggle_settings():
 
 @customer_bp.route('/get_unviewed_dilemmas', methods=['POST'])
 def get_unviewed_dilemmas():
-    # Log the incoming request
-    logging.info(f"200 OK: Received request to get unviewed dilemmas for user {user_id}")
-
     data = request.get_json()
     user_id = data.get('user_id', None)
     cookie_id = data.get('cookie_id', None)
     
+    # Log the incoming request
+    logging.info(f"200 OK: Received request to get unviewed dilemmas for user {user_id}")
+
     if not user_id and not cookie_id:
         return jsonify({"status": "failure", 'message': 'Missing user_id or cookie_id'}), 400
 

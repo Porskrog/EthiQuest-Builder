@@ -40,7 +40,6 @@ jQuery(document).ready(function($) {
     }
 
         // Check if the user cookie exists; if not, create one
-        let userCookie = getCookie("userCookie");
         if (userCookie === "") {
             userCookie = generateUniqueID();
             setCookie("userCookie", userCookie, 365);
