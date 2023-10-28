@@ -1,5 +1,5 @@
 from flask import jsonify
-from extensions import db, cache
+from extensions import db
 from models import Dilemma, Option, ContextCharacteristic, DilemmasContextCharacteristic, OptionDilemmaRelation, UserChoice, ViewedDilemma
 from sqlalchemy import func, desc
 from random import choice
