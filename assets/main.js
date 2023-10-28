@@ -41,7 +41,7 @@ jQuery(document).ready(function($) {
 
     
     // Function to fetch unviewed dilemmas
-    function fetchUnviewedDilemmas(userCookie, callback) {
+    function fetchUnviewedDilemmas(userCookie, userId, callback) {
         let dataToSend = {}; // Initialize empty object to send
 
         if (userId) {
@@ -179,14 +179,16 @@ jQuery(document).ready(function($) {
     let isRegistered = false;  // Set this true if the user is registered
     let userId = null;  // Initialize to the actual UserID if the user is registered
     let cookieId = getCookie("userCookie");  // Your function to get the cookie
-    
     let userQueryParameter = isRegistered ? `user_id=${userId}` : `cookie_id=${cookieId}`;
     
     $.ajax({
         type: 'GET',
         url: `${API_URL}/get_toggle_settings`,
         data: userQueryParameter,
+
+
         success: function(response) {
+            userId = response.user;  // Store user ID for future use
             // Set initial states
             if (response.random) {
                 $('#randomToggle').css({ left: '60px' }).text('ON');

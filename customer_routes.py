@@ -127,9 +127,10 @@ def get_toggle_settings():
     # Fetch the random and consequential fields from the user model
     Random = user.Random
     Consequential = user.Consequential
+    User = user.id
 
-    logging.info(f"200 OK: Successfully returned toggles for user {user.id}, Random: {Random}, Consequential: {Consequential}")
-    return jsonify({'random': Random, 'consequential': Consequential})
+    logging.info(f"200 OK: Successfully returned toggles for user {User}, Random: {Random}, Consequential: {Consequential}")
+    return jsonify({'user': User,'random': Random, 'consequential': Consequential})
 
 
 ######################################################################################################
@@ -183,21 +184,14 @@ def get_unviewed_dilemmas():
     if not user_id and not cookie_id:
         return jsonify({"status": "failure", 'message': 'Missing user_id or cookie_id'}), 400
 
-    if user_id:
-        # Fetch the unviewed dilemmas for this user
-        unviewed_dilemmas = fetch_unviewed_dilemmas(user_id)
-    elif cookie_id:
-        # Fetch the unviewed dilemmas for this user
-        unviewed_dilemmas = fetch_unviewed_dilemmas(cookie_id)
+    # Fetch the unviewed dilemmas for this user
+    unviewed_dilemmas = fetch_unviewed_dilemmas(user_id)
         
     # If there are no unviewed dilemmas, handle that case
     if not unviewed_dilemmas:
         return jsonify({"status": "failure", "message": "No new dilemmas available"}), 404
 
-    if user_id:
-        logging.info(f"200 OK: Successfully selected a dilemma for the user with user id: {user_id}.")
-    elif cookie_id:
-        logging.info(f"200 OK: Successfully selected a dilemma for the user with cookie id: {cookie_id}.")
+    logging.info(f"200 OK: Successfully selected a dilemma for the user with user id: {user_id}.")
     
     # No need to pick a random dilemma here, as fetch_unviewed_dilemmas already returns a random dilemma
     selected_dilemma = unviewed_dilemmas
