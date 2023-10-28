@@ -167,7 +167,7 @@ def update_toggle_settings():
     return jsonify({'random': Random, 'consequential': Consequential})
 
 ######################################################################################################
-#  3. Get Unviewed Dilemmas                HALLO EJ SET IGENNEM                                      #
+#  3. Get Unviewed Dilemmas                                                                          #
 ######################################################################################################
 
 @customer_bp.route('/get_unviewed_dilemmas', methods=['POST'])
