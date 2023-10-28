@@ -4,7 +4,6 @@ from models import Dilemma, Option, ContextCharacteristic, DilemmasContextCharac
 from sqlalchemy import func, desc
 from random import choice
 from datetime import datetime
-from gpt4_services import generate_new_dilemma_with_gpt4
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -139,6 +138,7 @@ def fetch_consequential_dilemma(option_id):
 
 @cache.memoize(60)  # Cache for 60 seconds
 def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
+    from gpt4_services import generate_new_dilemma_with_gpt4
     try:
         # Fetch all options for the given dilemma
         options = fetch_related_options(dilemma_id)
