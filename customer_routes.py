@@ -193,10 +193,13 @@ def get_unviewed_dilemmas():
     if not unviewed_dilemmas:
         return jsonify({"status": "failure", "message": "No new dilemmas available"}), 404
 
-    logging.info(f"200 OK: Successfully selected a dilemma for user  {user_id}.")
-
-    # Pick a random dilemma from the list of unviewed dilemmas
-    selected_dilemma = choice(unviewed_dilemmas)
+    if user_id:
+        logging.info(f"200 OK: Successfully selected a dilemma for the user with user id: {user_id}.")
+    elif cookie_id:
+        logging.info(f"200 OK: Successfully selected a dilemma for the user with cookie id: {cookie_id}.")
+    
+    # No need to pick a random dilemma here, as fetch_unviewed_dilemmas already returns a random dilemma
+    selected_dilemma = unviewed_dilemmas
 
     return jsonify({"status": "success", "message": "Successfully selected a dilemma", "dilemma_id": selected_dilemma.id}), 200
 
