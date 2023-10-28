@@ -112,8 +112,8 @@ def get_toggle_settings():
     # Fetch the cookie ID from query parameters
     # cookie_id = request.args.get('user_id')
 
-    data = request.get_json()
-    cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
+    # NEW: Fetch the cookie ID from query parameters
+    cookie_id = request.args.get('cookie_id', None)
 
     if not cookie_id:
         logging.warning("Missing cookie_id in the request")
