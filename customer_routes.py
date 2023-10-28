@@ -110,7 +110,14 @@ def get_toggle_settings():
     logging.info("200 OK: Received request to get toggles")
 
     # Fetch the cookie ID from query parameters
-    cookie_id = request.args.get('user_id')
+    # cookie_id = request.args.get('user_id')
+
+    data = request.get_json()
+    cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
+
+    if not cookie_id:
+        logging.warning("Missing cookie_id in the request")
+        return jsonify({"status": "failure", 'message': 'Missing cookie_id'}), 400
 
     user = get_or_create_user(cookie_id) # Get or create the user  
     if not user:
@@ -171,7 +178,7 @@ def get_unviewed_dilemmas():
     data = request.get_json()
     user_id = data.get('user_id', None)
     cookie_id = data.get('cookie_id', None)
-
+    
     if not user_id and not cookie_id:
         return jsonify({"status": "failure", 'message': 'Missing user_id or cookie_id'}), 400
 
@@ -203,18 +210,6 @@ def get_dilemma():
     response = {"status": "failure", "message": "Unknown error"}
     status_code = 500
     try:
-        data = request.get_json()
-        cookie_id = data.get('cookie_id', None)  # Get cookie_id from request
-
-        if not cookie_id:
-            logging.warning("Missing cookie_id in the request")
-            return jsonify({"status": "failure", 'message': 'Missing cookie_id'}), 400
-
-        user = get_or_create_user(cookie_id) # Get or create the user  
-        if not user:
-            logging.error("404 Not Found: User could not be created")
-            return jsonify({"status": "failure", 'message': 'User not found'}), 404
-
         # NEW: Fetch the last choice made by this user
         last_dilemma, last_option, last_choice = get_last_dilemma_and_option(user.id, return_choice_object=True)
 
