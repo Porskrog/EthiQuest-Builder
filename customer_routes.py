@@ -173,6 +173,7 @@ def update_toggle_settings():
 @customer_bp.route('/get_unviewed_dilemmas', methods=['POST'])
 def get_unviewed_dilemmas():
     data = request.get_json()
+    logging.info(f"Received data: {data}")  # Log incoming data
     user_id = data.get('user_id', None)
     cookie_id = data.get('cookie_id', None)
     

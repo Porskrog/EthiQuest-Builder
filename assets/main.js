@@ -40,41 +40,21 @@ jQuery(document).ready(function($) {
     }
 
     
-    // Function to update toggle setting in the backend
-    function updateToggleSetting(toggleName, state) {
-        // Replace with your actual API call
-        $.ajax({
-            type: 'POST',
-            url: `${API_URL}/update_toggle_setting`,
-            data: JSON.stringify({
-                user_id: userCookie, // assuming userCookie is your user id
-                toggle_name: toggleName,
-                state: state
-            }),
-            contentType: "application/json; charset=utf-8",
-            success: function(response) {
-                console.log("Toggle setting updated:", response);
-            }
-        });
-    }
-
-
     // Function to fetch unviewed dilemmas
     function fetchUnviewedDilemmas(userCookie, callback) {
-        let requestData = {};
+        let dataToSend = {}; // Initialize empty object to send
+
         if (userId) {
-            requestData.user_id = userId;
-        } else {
-            requestData.cookie_id = userCookie;
+            dataToSend.user_id = userId;
         }
-    
+        if (userCookie) {
+            dataToSend.cookie_id = userCookie;
+        }
+
         $.ajax({
             type: 'POST',
             url: `${API_URL}/get_unviewed_dilemmas`,
-            data: JSON.stringify({
-                user_id: userId,  // Include this only if you have a user_id
-                cookie_id: userCookie  // Include this only if you have a cookie_id
-            }),
+            data: JSON.stringify(dataToSend), // Use the updated dataToSend object
             contentType: "application/json; charset=utf-8",
             success: function(response) {
                 callback(null, response.dilemmas);
@@ -82,6 +62,23 @@ jQuery(document).ready(function($) {
             error: function(error) {
                 console.error("Error fetching unviewed dilemmas:", error);
                 callback(error);
+            }
+        });
+    }
+
+    // Function to update toggle setting in the backend
+    function updateToggleSetting(toggleName, state) {
+        $.ajax({
+            type: 'POST',
+            url: `${API_URL}/update_toggle_setting`,
+            data: JSON.stringify({
+                cookie_id: userCookie, // corrected to cookie_id
+                toggle_name: toggleName,
+                state: state
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function(response) {
+                console.log("Toggle setting updated:", response);
             }
         });
     }
