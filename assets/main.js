@@ -1,10 +1,9 @@
 <script type="text/javascript"> 
 jQuery(document).ready(function($) {
 
-    // Replace this with your deployed API URL
-    const API_URL = 'https://ethiquest-builder.onrender.com/customer';
-
-    let currentDilemmaID = null; 
+    // --------------------------------------------------------------------
+    // Function definitions
+    // --------------------------------------------------------------------
 
     // Function to generate a unique ID
     function generateUniqueID() {
@@ -47,23 +46,7 @@ jQuery(document).ready(function($) {
             setCookie("userCookie", userCookie, 365);
         }
 
-    // Fetch initial toggle settings from backend based on user.id
-    // Replace with your actual API call
-    $.ajax({
-        type: 'GET',
-        url: `${API_URL}/get_toggle_settings`,
-        data: { user_id: userCookie }, // assuming userCookie is your user id
-        success: function(response) {
-            // Set initial states
-            if (response.random) {
-                $('#randomToggle').css({ left: '60px' }).text('ON');
-            }
-            if (response.consequential) {
-                $('#consequentialToggle').css({ left: '60px' }).text('ON');
-            }
-        }
-    });
-
+    
     // Function to update toggle setting in the backend
     function updateToggleSetting(toggleName, state) {
         // Replace with your actual API call
@@ -82,30 +65,17 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // Event listeners for toggle buttons
-    $('.toggle-button').click(function() {
-        const toggleId = $(this).attr('id');
-        if ($(this).css('left') === '60px') {
-            $(this).css({ left: '0px' }).text('OFF');
-            updateToggleSetting(toggleId, false);
-        } else {
-            $(this).css({ left: '60px' }).text('ON');
-            updateToggleSetting(toggleId, true);
-        }
-    });
-
 
     // Function to fetch unviewed dilemmas
     function fetchUnviewedDilemmas(userCookie, callback) {
         $.ajax({
             type: 'POST',
-            url: `${API_URL}/get_unviewed_dilemmas`, // Replace with your actual backend URL
+            url: `${API_URL}/get_unviewed_dilemmas`,
             data: JSON.stringify({
                 user_id: userId,  // Include this only if you have a user_id
                 cookie_id: userCookie  // Include this only if you have a cookie_id
             }),
             contentType: "application/json; charset=utf-8",
-            },
             success: function(response) {
                 callback(null, response.dilemmas);
             },
@@ -115,7 +85,7 @@ jQuery(document).ready(function($) {
             }
         });
     }
-
+    
     // Function to fetch random dilemma
     function fetchRandomDilemma() {
         let userCookie = getCookie("userCookie"); // Get the user cookie
@@ -192,6 +162,58 @@ jQuery(document).ready(function($) {
         });
     }
 
+
+    // --------------------------------------------------------------------
+    // Event handlers and API calls
+    // --------------------------------------------------------------------
+
+    // Replace this with your deployed API URL
+    const API_URL = 'https://ethiquest-builder.onrender.com/customer';
+
+    let currentDilemmaID = null; 
+    let userCookie = getCookie("userCookie");
+
+    if (userCookie === "") {
+        userCookie = generateUniqueID();
+        setCookie("userCookie", userCookie, 365);
+    }
+    
+    // Fetch initial toggle settings from backend based on user.id
+    // Replace with your actual API call
+    let isRegistered = false;  // Set this true if the user is registered
+    let userId = null;  // Initialize to the actual UserID if the user is registered
+    let cookieId = getCookie("userCookie");  // Your function to get the cookie
+    
+    let userQueryParameter = isRegistered ? `user_id=${userId}` : `user_id=${cookieId}`;
+    
+    $.ajax({
+        type: 'GET',
+        url: `${API_URL}/get_toggle_settings`,
+        data: userQueryParameter,
+        success: function(response) {
+            // Set initial states
+            if (response.random) {
+                $('#randomToggle').css({ left: '60px' }).text('ON');
+            }
+            if (response.consequential) {
+                $('#consequentialToggle').css({ left: '60px' }).text('ON');
+            }
+        }
+    });
+    
+    // Event listeners for toggle buttons
+    $('.toggle-button').click(function() {
+        const toggleId = $(this).attr('id');
+        if ($(this).css('left') === '60px') {
+            $(this).css({ left: '0px' }).text('OFF');
+            updateToggleSetting(toggleId, false);
+        } else {
+            $(this).css({ left: '60px' }).text('ON');
+            updateToggleSetting(toggleId, true);
+        }
+    });
+
+
     // Add a click event listener to option list items
     $(document).on('click', '.option-item', function() {
         const OptionID = $(this).data('id');
@@ -229,6 +251,37 @@ jQuery(document).ready(function($) {
     $('#getRandomDilemmaButton').click(function() {
         fetchRandomDilemma();
     });
+
+
+// Optionally fetch unviewed dilemmas when the page loads
+$.ajax({
+    type: 'POST',
+    url: `${API_URL}/get_unviewed_dilemmas`,
+    data: JSON.stringify({
+        // If you have a user ID, include it here. Otherwise, you can comment this out.
+        // user_id: userId,
+        cookie_id: userCookie
+    }),
+    contentType: "application/json; charset=utf-8",
+    success: function(response) {
+        // Check if there are any unviewed dilemmas
+        if (response.dilemmas && response.dilemmas.length > 0) {
+            const firstDilemma = response.dilemmas[0];
+            let dilemmaHtml = `<h3>${firstDilemma.question}</h3><p><h4>Choose an option</h4></p><ul>`;
+            firstDilemma.options.forEach(function(option) {
+                dilemmaHtml += `<h4><li class="option-item" data-id="${option.id}">${option.text}</li></h4>`;
+            });
+            dilemmaHtml += '</ul>';
+            $('#randomDilemmaDisplay').html(dilemmaHtml);
+        } else {
+            $('#randomDilemmaDisplay').html('<h3>No more unviewed dilemmas.</h3>');
+        }
+    },
+    error: function(error) {
+        console.error("Error fetching unviewed dilemmas:", error);
+    }
+});
+
 
 });
 

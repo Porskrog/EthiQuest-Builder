@@ -33,16 +33,17 @@ def get_customer_data():
 
 # Function to get or create a user
 def get_or_create_user(cookie_id):
-    user = User.query.filter_by(cookie_id=cookie_id).first()
-    if not user:
-        try:
+    try:
+        user = User.query.filter_by(cookie_id=cookie_id).first()
+        if not user:
             user = User(cookie_id=cookie_id)
             db.session.add(user)
             db.session.commit()
-            logging.info(f"200 OK: Successfully got or created a user. User ID: {user}")
-        except Exception as e:
-            logging.error(f"Database commit failed: {e}")
-            return None
+            logging.info(f"200 OK: Successfully got or created a user. User ID: {user.id}")
+    except Exception as e:
+        logging.error(f"Database error: {e}")
+        db.session.rollback()
+        return None
     return user
 
 
@@ -121,6 +122,7 @@ def get_toggle_settings():
     Random = user.Random
     Consequential = user.Consequential
 
+    logging.info("200 OK: Successfully returned toggles for user {user_id}, Random: {Random}, Consequential: {Consequential}")
     return jsonify({'random': Random, 'consequential': Consequential})
 
 ######################################################################################################
@@ -154,6 +156,7 @@ def update_toggle_settings():
         logging.error(f"Database commit failed: {e}")
         return jsonify({"status": "failure", 'message': 'Database commit failed'}), 500
 
+    logging.info("200 OK: Successfully updated toggles for user {user_id}, Random: {Random}, Consequential: {Consequential}")
     return jsonify({'random': Random, 'consequential': Consequential})
 
 ######################################################################################################
