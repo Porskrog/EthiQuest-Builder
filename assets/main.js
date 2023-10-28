@@ -61,6 +61,13 @@ jQuery(document).ready(function($) {
 
     // Function to fetch unviewed dilemmas
     function fetchUnviewedDilemmas(userCookie, callback) {
+        let requestData = {};
+        if (userId) {
+            requestData.user_id = userId;
+        } else {
+            requestData.cookie_id = userCookie;
+        }
+    
         $.ajax({
             type: 'POST',
             url: `${API_URL}/get_unviewed_dilemmas`,
