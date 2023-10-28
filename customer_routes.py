@@ -107,7 +107,6 @@ def handle_paying_user(user_id):
 
 @customer_bp.route('/get_toggle_settings', methods=['GET'])
 def get_toggle_settings():
-    # Log the incoming request
     logging.info("200 OK: Received request to get toggles")
 
     # Fetch the cookie ID from query parameters
@@ -122,8 +121,9 @@ def get_toggle_settings():
     Random = user.Random
     Consequential = user.Consequential
 
-    logging.info("200 OK: Successfully returned toggles for user {user_id}, Random: {Random}, Consequential: {Consequential}")
+    logging.info(f"200 OK: Successfully returned toggles for user {user.id}, Random: {Random}, Consequential: {Consequential}")
     return jsonify({'random': Random, 'consequential': Consequential})
+
 
 ######################################################################################################
 #  2. Update Toggle Setting                                                                          #
@@ -156,7 +156,7 @@ def update_toggle_settings():
         logging.error(f"Database commit failed: {e}")
         return jsonify({"status": "failure", 'message': 'Database commit failed'}), 500
 
-    logging.info("200 OK: Successfully updated toggles for user {user_id}, Random: {Random}, Consequential: {Consequential}")
+    logging.info(f"200 OK: Successfully updated toggles for user {user.id}, Random: {user.Random}, Consequential: {user.Consequential}")
     return jsonify({'random': Random, 'consequential': Consequential})
 
 ######################################################################################################
