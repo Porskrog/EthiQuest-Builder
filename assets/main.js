@@ -39,12 +39,6 @@ jQuery(document).ready(function($) {
         document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
     }
 
-        // Check if the user cookie exists; if not, create one
-        if (userCookie === "") {
-            userCookie = generateUniqueID();
-            setCookie("userCookie", userCookie, 365);
-        }
-
     
     // Function to update toggle setting in the backend
     function updateToggleSetting(toggleName, state) {
@@ -216,8 +210,6 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.option-item', function() {
         const OptionID = $(this).data('id');
         fetchOptionDetails(OptionID);
-
-        let userCookie = getCookie("userCookie"); // Get the user cookie
 
         console.log("Sending data:", {  // Debug log
             option_id: OptionID,
