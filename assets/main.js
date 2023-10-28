@@ -88,7 +88,6 @@ jQuery(document).ready(function($) {
     
     // Function to fetch random dilemma
     function fetchRandomDilemma() {
-        let userCookie = getCookie("userCookie"); // Get the user cookie
         $.ajax({
             type: 'POST',
             url: `${API_URL}/get_dilemma`,
@@ -184,7 +183,7 @@ jQuery(document).ready(function($) {
     let userId = null;  // Initialize to the actual UserID if the user is registered
     let cookieId = getCookie("userCookie");  // Your function to get the cookie
     
-    let userQueryParameter = isRegistered ? `user_id=${userId}` : `user_id=${cookieId}`;
+    let userQueryParameter = isRegistered ? `user_id=${userId}` : `cookie_id=${cookieId}`;
     
     $.ajax({
         type: 'GET',
