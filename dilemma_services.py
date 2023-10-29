@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 def get_viewed_dilemmas(user_id):
     viewed_dilemmas = ViewedDilemma.query.filter_by(user_id=user_id).all()
     viewed_dilemma_ids = [dilemma.dilemma_id for dilemma in viewed_dilemmas]
-    logging.info(f"200 OK: Successfully got the list of viewed dilemmas.")
+    logging.info(f"200 OK: Successfully got the list of viewed dilemmas for user id: {user_id}")
     return viewed_dilemma_ids
 
 # Mark a dilemma as viewed by a user
@@ -48,10 +48,11 @@ def fetch_unviewed_dilemmas(user_id):
     
     # If there are no unviewed dilemmas, return None
     if not unviewed_dilemmas:
+        logging.warning(f"201 WARNING: There are no unviewed dilemmas for user id: {user_id}")
         return None
     
     # Otherwise, return a random unviewed dilemma
-    logging.info(f"200 OK: Successfully fected unviewed dilemmas for the user: {user_id}")
+    logging.info(f"200 OK: Successfully fected unviewed dilemmas for user id: {user_id}")
     return choice(unviewed_dilemmas)
 
 # Fetch the last dilemma and option chosen by this user from the database.
@@ -60,7 +61,7 @@ def get_last_dilemma_and_option(user_id, return_choice_object=False):
     if last_choice:
         last_dilemma = Dilemma.query.get(last_choice.DilemmaID)
         last_option = Option.query.get(last_choice.OptionID)
-        logging.info(f"200 OK: Successfully fetched the last dilemma and option chosen by the user. User ID: {user_id}")
+        logging.info(f"200 OK: Successfully fetched the last dilemma {last_dilemma} and option {last_option} chosen by the user ID: {user_id}")
         
         if return_choice_object:
             return last_dilemma.question, last_option.text, last_choice  # Return the last_choice object as well.
@@ -266,3 +267,19 @@ def prepare_dilemma_json_response(dilemma, related_options):
     }
     logging.info(f"200 OK: Successfully returned the dilemma to the front end: {dilemma_data}")
     return jsonify({'dilemma': dilemma_data}), 200
+
+# Fetch a dilemma and related options for the user
+def fetch_a_random_dilemma():
+    try:
+        # Fetch a random dilemma from the database
+        random_dilemma = Dilemma.query.order_by(func.rand()).first()
+
+        if random_dilemma:
+            logging.info(f"200 OK: Successfully fetched a random dilemma: {random_dilemma}")
+            return random_dilemma
+        else:
+            logging.warning(f"404 Not Found: No dilemmas found in the database.")
+            return jsonify({"status": "failure", "message": "No dilemmas found in the database."}), 404
+    except Exception as e:
+        logging.exception(f"An error occurred: {e}")
+        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
