@@ -227,6 +227,7 @@ def get_dilemma():
                 return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
         else:
             if is_consequential is True:
+                logging.info(f"200 OK: Consequential is True")
                 # Fetch the consequential dilemma
                 selected_dilemma = fetch_consequential_dilemma(last_option.id)
                 if selected_dilemma is None:
@@ -239,6 +240,7 @@ def get_dilemma():
                     selected_dilemma = add_new_dilemma_and_options_to_db(context_list, description, generated_options)
                     logging.info(f"200 OK: Successfully generated and stored a new dilemma for user {user_id}")
             else:
+                logging.info(f"200 OK: Consequential is False {is_consequential} and Random is {is_random}")
                 ######## Need to add logic for randomly selecting from the list of unviewed dilemmas ########
                 # Fetch a random dilemma
                 selected_dilemma = fetch_random_dilemma()
