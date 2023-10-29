@@ -212,6 +212,8 @@ def get_dilemma():
     last_option = None
     selected_dilemma = None
     related_options = None
+    is_random = True if is_random == "True" else False
+    is_consequential = True if is_consequential == "True" else False
 
     # Fetch tfhe last dilemma and option chosen by this user from the database
     last_dilemma, last_option = get_last_dilemma_and_option(user_id)
