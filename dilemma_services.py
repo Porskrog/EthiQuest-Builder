@@ -269,7 +269,7 @@ def prepare_dilemma_json_response(dilemma, related_options):
     return jsonify({'dilemma': dilemma_data}), 200
 
 # Fetch a dilemma and related options for the user
-def fetch_a_random_dilemma():
+def fetch_random_dilemma():
     try:
         # Fetch a random dilemma from the database
         random_dilemma = Dilemma.query.order_by(func.rand()).first()
