@@ -230,6 +230,8 @@ def get_dilemma():
         else:
             if is_consequential is True:
                 logging.info(f"200 OK: Consequential is True")
+                logging.info("About to call fetch_consequential_dilemma.")
+                logging.info(f"Type of last_option.id: {type(last_option.id)}")
                 # Fetch the consequential dilemma
                 selected_dilemma = fetch_consequential_dilemma(last_option.id)
                 if selected_dilemma is None:
