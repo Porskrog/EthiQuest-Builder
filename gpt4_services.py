@@ -6,6 +6,12 @@ from flask import jsonify
 from dilemma_services import get_last_dilemma_and_option
 import openai
 
+HTTP_OK = 200
+HTTP_BAD_REQUEST = 400
+HTTP_NOT_FOUND = 404
+HTTP_INTERNAL_SERVER_ERROR = 500
+HTTP_CREATED = 201
+
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 

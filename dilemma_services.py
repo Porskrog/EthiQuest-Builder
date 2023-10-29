@@ -7,6 +7,12 @@ from random import choice
 from datetime import datetime
 import logging
 
+HTTP_OK = 200
+HTTP_BAD_REQUEST = 400
+HTTP_NOT_FOUND = 404
+HTTP_INTERNAL_SERVER_ERROR = 500
+HTTP_CREATED = 201
+
 logging.basicConfig(level=logging.INFO)
 
 ######################################################################################################
@@ -138,7 +144,7 @@ def fetch_consequential_dilemma(option_id):
         logging.exception(f"An error occurred: {e}")
         return None
 
-@cache.memoize(60)  # Cache for 60 seconds
+# @cache.memoize(60)  # Cache for 60 seconds
 def fetch_or_generate_consequential_dilemmas(dilemma_id, user_id):
     from gpt4_services import generate_new_dilemma_with_gpt4
     try:
