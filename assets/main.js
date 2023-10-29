@@ -209,7 +209,7 @@ jQuery(document).ready(function($) {
             }
 
             // Fetch unviewed dilemmas after getting user ID
-            fetchUnviewedDilemmas(userCookie, userId);
+            // fetchUnviewedDilemmas(userCookie, userId);
         }
     });
 

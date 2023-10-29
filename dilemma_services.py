@@ -129,9 +129,11 @@ def fetch_related_options(dilemma_id):
 
 # Fetch a dilemma that is a consequence of the given option
 def fetch_consequential_dilemma(option_id):
+    logging.info(f"200 OK: Fetching consequential dilemma for option ID: {option_id}")
     try:
         # Query the OptionDilemmaRelation table to find a dilemma that is a consequence of the given option
         relation = OptionDilemmaRelation.query.filter_by(OptionID=option_id, RelationType='ConsequenceOf').first()
+        logging.info(f"200 OK: Successfully fetched the relation. Relation: {relation}")
         
         if relation:
             # Fetch the dilemma using the DilemmaID found in the relation
