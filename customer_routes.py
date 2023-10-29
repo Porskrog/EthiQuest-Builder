@@ -6,7 +6,7 @@ from flask_cors import CORS
 from random import choice
 from app import limiter, cache  
 from gpt4_services import generate_new_dilemma_with_gpt4, call_gpt4_api, parse_gpt4_response
-from dilemma_services import prepare_dilemma_json_response, add_new_dilemma_and_options_to_db, mark_dilemma_as_viewed, get_last_dilemma_and_option, fetch_related_options, fetch_consequential_dilemma, fetch_unviewed_dilemmas, fetch_or_generate_consequential_dilemmas
+from dilemma_services import fetch_random_dilemma, prepare_dilemma_json_response, add_new_dilemma_and_options_to_db, mark_dilemma_as_viewed, get_last_dilemma_and_option, fetch_related_options, fetch_consequential_dilemma, fetch_unviewed_dilemmas, fetch_or_generate_consequential_dilemmas
 import os
 import json
 import time
@@ -125,13 +125,12 @@ def get_toggle_settings():
         return jsonify({"status": "failure", 'message': 'User not found'}), 404
 
     # Fetch the random and consequential fields from the user model
-    Random = user.Random
-    Consequential = user.Consequential
-    User = user.id
+    is_random = user.Random
+    is_consequential = user.Consequential
+    user_id = user.id
 
-    logging.info(f"200 OK: Successfully returned toggles for user {User}, Random: {Random}, Consequential: {Consequential}")
-    return jsonify({'user': User,'random': Random, 'consequential': Consequential})
-
+    logging.info(f"200 OK: Successfully returned toggles for user {user_id}, Random: {is_random}, Consequential: {is_consequential}")
+    return jsonify({'user': user_id,'random': is_random, 'consequential': is_consequential})
 
 ######################################################################################################
 #  2. Update Toggle Setting                                                                          #
@@ -191,79 +190,68 @@ def get_unviewed_dilemmas():
     if not unviewed_dilemmas:
         return jsonify({"status": "failure", "message": "No new dilemmas available"}), 404
 
-    logging.info(f"200 OK: Successfully selected a dilemma for the user with user id: {user_id}.")
-    
-    # No need to pick a random dilemma here, as fetch_unviewed_dilemmas already returns a random dilemma
-    selected_dilemma = unviewed_dilemmas
-
-    return jsonify({"status": "success", "message": "Successfully selected a dilemma", "dilemma_id": selected_dilemma.id}), 200
+    logging.info(f"200 OK: Successfully fetched a list of unviewed dilemmas for the user with user id: {user_id}.")
+    logging.info(f"200 OK: The list of unveiled dilemmas: {unviewed_dilemmas}")    
+    return unviewed_dilemmas  # Directly return the response
 
 ######################################################################################################
 #  4. Get Dilemma                                                                                    #
 ######################################################################################################
 
 @limiter.limit("5 per minute") # Limit to 5 requests per minute
-@customer_bp.route('/get_dilemma', methods=['POST'])  # Changed to POST to get user details
+@customer_bp.route('/get_dilemma', methods=['POST'])  # POST request to get a dilemma
 def get_dilemma():
-    response = {"status": "failure", "message": "Unknown error"}
-    status_code = 500
+    data = request.get_json() # Get the JSON data from the request
+    logging.info(f"Received data: {data}")
+    user_id = data.get('user_id', None) # Get the user ID from the request
+    is_random = data.get('is_random', None) 
+    is_consequential = data.get('is_consequential', None) 
+    logging.info("Get dilemma called with user id: {user_id}, Random: {is_random}, Consequential: {is_consequential}")
+
     try:
-        # NEW: Fetch the last choice made by this user
-        last_dilemma, last_option, last_choice = get_last_dilemma_and_option(user.id, return_choice_object=True)
-
-        # NEW: Initialize as None
-        selected_dilemma = None
-        error_response = None
-
-        # NEW: If a last choice exists, look for a consequential dilemma
-        consequential_dilemma = None
-        if last_choice:
-            logging.info("Fetching for consequential dilemma")
-            consequential_dilemma = fetch_consequential_dilemma(last_choice.OptionID)
-
-        # The existing logic to fetch a random dilemma
-        if user.user_type == 'Paying':
-            logging.info("Call handle paying user")
-            if consequential_dilemma is None:
-                 selected_dilemma, next_dilemmas, error_response = handle_paying_user(user.id)
-        
-        else:   # Free user
-            logging.info("Call handle free user")
-            selected_dilemma, _, error_response = handle_free_user(user.id)
-
-        # If a consequential dilemma was found, overwrite the selected_dilemma
-        if consequential_dilemma:
-            selected_dilemma = consequential_dilemma
-
-        if error_response:
-            return jsonify(error_response), 404  # or other status code based on the error
-
-        # Fetch related options using utility function 
-        related_options = fetch_related_options(selected_dilemma.id)  
-
-        # Prepare and return JSON response using utility function 
-        logging.info(f"200 OK: Successfully returned dilemma for user {user.id}")
-        response = prepare_dilemma_json_response(selected_dilemma, related_options)
-        status_code = 200
-
-        # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes
-        message, status_code = mark_dilemma_as_viewed(user.id, selected_dilemma.id)
-        if status_code != 201:
-            return jsonify({"status": "failure", "message": message}), status_code
-    
-        # Invalidate cache here after adding a new viewed dilemma
-        cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user.id)
-
-    except KeyError as e:
-        logging.error(f"KeyError: {e}")
-        response = {"status": "failure", "message": "Internal Server Error"}
-        status_code = 500
+        # Fetch tfhe last dilemma and option chosen by this user from the database
+        last_dilemma, last_option = get_last_dilemma_and_option(user_id)
+        if last_dilemma is None or last_option is None:
+            selected_dilemma = fetch_random_dilemma()
+        else:
+            if is_consequential == 'True':
+                # Fetch the consequential dilemma
+                selected_dilemma = fetch_consequential_dilemma(last_option.id)
+                if selected_dilemma is None:
+                    # Generate a new dilemma via GPT-4
+                    generated_dilemma, generated_options = generate_new_dilemma_with_gpt4(last_dilemma, last_option, user_id)
+                    # Store this new dilemma and options in your database
+                    # Insert Context Characteristics and update the many-to-many table
+                    context_list = generated_dilemma['Context'].split(", ")
+                    description = generated_dilemma['Description']
+                    selected_dilemma = add_new_dilemma_and_options_to_db(context_list, description, generated_options)
+                    logging.info(f"200 OK: Successfully generated and stored a new dilemma for user {user_id}")
+                    # Invalidate cache here if you add a new dilemma
+                    cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user_id)
+            else:
+                ######## Need to add logic for randomly selecting from the list of unviewed dilemmas ########
+                # Fetch a random dilemma
+                selected_dilemma = fetch_random_dilemma()
+            
+            # Fetch related options using utility function
+            related_options = fetch_related_options(selected_dilemma.id)
+            logging.info(f"200 OK: Successfully fetched a dilemma for the user with user id: {user_id}.")
+            logging.info(f"200 OK: The dilemma: {selected_dilemma}")
+            logging.info(f"200 OK: The related options: {related_options}")
+            return prepare_dilemma_json_response(selected_dilemma, related_options)
     except Exception as e:
-        logging.critical(f"An unexpected error occurred: {e}")
-        response = {"status": "failure", "message": "Internal Server Error"}
-        status_code = 500
+        logging.error(f"An error occurred: {e}")
+        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
     
-    return response  # Directly return the response
+    # Add an entry to the ViewedDilemmas table for this user and dilemma for tracking purposes
+    message, status_code = mark_dilemma_as_viewed(user_id, selected_dilemma.id)
+    if status_code != 201:
+        return jsonify({"status": "failure", "message": message}), status_code
+
+    # Invalidate cache here after adding a new viewed dilemma
+    cache.delete_memoized(fetch_or_generate_consequential_dilemmas, selected_dilemma.id, user_id)
+
+    return jsonify({"status": "success", "message": "Successfully returned dilemma"}), 200
 
 ######################################################################################################
 #  5. Mark dilemma as viewed                                                                         # 
