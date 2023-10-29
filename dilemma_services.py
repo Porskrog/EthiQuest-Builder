@@ -134,7 +134,7 @@ def fetch_consequential_dilemma(option_id):
         # Query the OptionDilemmaRelation table to find a dilemma that is a consequence of the given option
         relation = OptionDilemmaRelation.query.filter_by(OptionID=option_id, RelationType='ConsequenceOf').first()
         logging.info(f"200 OK: Successfully fetched the relation. Relation: {relation}")
-        
+
         if relation:
             # Fetch the dilemma using the DilemmaID found in the relation
             dilemma = Dilemma.query.get(relation.DilemmaID)
@@ -281,6 +281,7 @@ def fetch_random_dilemma():
     try:
         # Fetch a random dilemma from the database
         random_dilemma = Dilemma.query.order_by(func.rand()).first()
+        logging.info(f"200 OK: Successfully fetched a random dilemma: {random_dilemma}")
 
         if random_dilemma:
             logging.info(f"200 OK: Successfully fetched a random dilemma: {random_dilemma}")

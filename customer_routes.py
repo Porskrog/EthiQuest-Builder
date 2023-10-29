@@ -215,7 +215,8 @@ def get_dilemma():
     
     # Fetch tfhe last dilemma and option chosen by this user from the database
     last_dilemma, last_option = get_last_dilemma_and_option(user_id)
-
+    logging.info(f"200 OK: Successfully fetched the last dilemma and option for user {user_id}. Last dilemma: {last_dilemma}, Last option: {last_option}")
+    
     try:
         # If there is no last dilemma or option, fetch a random dilemma
         if last_dilemma is None or last_option is None:
