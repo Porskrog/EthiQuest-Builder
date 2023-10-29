@@ -70,9 +70,9 @@ def get_last_dilemma_and_option(user_id, return_choice_object=False):
         logging.info(f"200 OK: Successfully fetched the last dilemma {last_dilemma} and option {last_option} chosen by the user ID: {user_id}")
         
         if return_choice_object:
-            return last_dilemma.question, last_option.text, last_choice  # Return the last_choice object as well.
+            return last_dilemma, last_option, last_choice  # Return the last_choice object as well.
         
-        return last_dilemma.question, last_option.text  # Assuming 'question' and 'text' are the relevant fields.
+        return last_dilemma, last_option  # Assuming 'question' and 'text' are the relevant fields.
     else:
         if return_choice_object:
             return None, None, None  # Return None for the last_choice object as well.
@@ -129,6 +129,7 @@ def fetch_related_options(dilemma_id):
 
 # Fetch a dilemma that is a consequence of the given option
 def fetch_consequential_dilemma(option_id):
+    logging.info(f"Type of option_id: {type(option_id)}")
     logging.info(f"200 OK: Fetching consequential dilemma for option ID: {option_id}")
     try:
         # Query the OptionDilemmaRelation table to find a dilemma that is a consequence of the given option
