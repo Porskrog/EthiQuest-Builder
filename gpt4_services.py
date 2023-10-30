@@ -124,7 +124,7 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
     - Cons: {Cons for Option C, max 20 words}
     """
 
-    logging.info(f"200 OK: Successfully generated a new dilemma with GPT-4: {full_prompt}")
+    logging.info(f"200 OK: Calling GPT-4 API to generate new dilemma. Prompt: {full_prompt}")
     # API call to GPT-4 to generate the new dilemma
 
     try:

@@ -6,7 +6,7 @@ from flask_cors import CORS
 from random import choice
 from app import limiter, cache  
 from gpt4_services import generate_new_dilemma_with_gpt4, call_gpt4_api, parse_gpt4_response
-from dilemma_services import fetch_random_dilemma, prepare_dilemma_json_response, add_new_dilemma_and_options_to_db, mark_dilemma_as_viewed, get_last_dilemma_and_option, fetch_related_options, fetch_consequential_dilemma, fetch_unviewed_dilemmas, fetch_or_generate_consequential_dilemmas
+from dilemma_services import fetch_random_dilemma, prepare_dilemma_json_response, add_new_dilemma_and_options_to_db, mark_dilemma_as_viewed, get_last_dilemma_and_option, fetch_related_options, fetch_consequential_dilemma, fetch_unviewed_dilemmas, fetch_or_generate_consequential_dilemmas, add_option_dilemma_relation
 import os
 import json
 import time
@@ -229,9 +229,8 @@ def get_dilemma():
                 return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
         else:
             if is_consequential is True:
-                logging.info(f"200 OK: Consequential is True")
-                logging.info("About to call fetch_consequential_dilemma.")
-                logging.info(f"Type of last_option.id: {type(last_option.id)}")
+                logging.info(f"200 OK: Consequential is True. About to call fetch_consequential_dilemma.")
+        
                 # Fetch the consequential dilemma
                 selected_dilemma = fetch_consequential_dilemma(last_option.id)
                 if selected_dilemma is None:
@@ -243,6 +242,10 @@ def get_dilemma():
                     description = generated_dilemma['Description']
                     selected_dilemma = add_new_dilemma_and_options_to_db(context_list, description, generated_options)
                     logging.info(f"200 OK: Successfully generated and stored a new dilemma for user {user_id}")
+
+                    # Mark the newy generated dilemma as a consequence of the last option
+                    # Use the utility function to add a new entry in the OptionDilemmaRelation table
+                    add_option_dilemma_relation(last_option.id, generated_dilemma.id, 'ConsequenceOf')
             else:
                 logging.info(f"200 OK: Consequential is False {is_consequential} and Random is {is_random}")
                 ######## Need to add logic for randomly selecting from the list of unviewed dilemmas ########
@@ -254,6 +257,7 @@ def get_dilemma():
             logging.info(f"200 OK: Successfully fetched a dilemma for the user with user id: {user_id}.")
             logging.info(f"200 OK: The dilemma: {selected_dilemma}")
             logging.info(f"200 OK: The related options: {related_options}")
+            logging.info(f"200 OK: Is aconsequence of the last dilemma: {last_dilemma}")
             return prepare_dilemma_json_response(selected_dilemma, related_options)
     except Exception as e:
         logging.error(f"Database error: {e}")
