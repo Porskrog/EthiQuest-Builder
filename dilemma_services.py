@@ -134,14 +134,15 @@ def fetch_consequential_dilemma(option_id):
     try:
         # Query the OptionDilemmaRelation table to find a dilemma that is a consequence of the given option
         relation = OptionDilemmaRelation.query.filter_by(OptionID=option_id, RelationType='ConsequenceOf').first()
-        logging.info(f"200 OK: Successfully fetched the relation. Relation: {relation}")
 
         if relation:
+            logging.info(f"200 OK: Successfully fetched the relation. Relation: {relation}")
             # Fetch the dilemma using the DilemmaID found in the relation
             dilemma = Dilemma.query.get(relation.DilemmaID)
             logging.info(f"200 OK: Successfully fetched the consequential dilemma. Dilemma: {dilemma}, Option ID: {option_id}")
             return dilemma
         else:
+            logging.info(f"200 OK: No consequential dilemma found for option ID: {option_id}. Hence, we will have to generate a consequential dilemma via GPT-4")
             return None
     except Exception as e:
         logging.exception(f"An error occurred: {e}")
