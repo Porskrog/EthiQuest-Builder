@@ -245,7 +245,7 @@ def get_dilemma():
 
                     # Mark the newy generated dilemma as a consequence of the last option
                     # Use the utility function to add a new entry in the OptionDilemmaRelation table
-                    add_option_dilemma_relation(last_option.id, generated_dilemma.id, 'ConsequenceOf')
+                    add_option_dilemma_relation(last_option.id, selected_dilemma.id, 'ConsequenceOf')
             else:
                 logging.info(f"200 OK: Consequential is False {is_consequential} and Random is {is_random}")
                 ######## Need to add logic for randomly selecting from the list of unviewed dilemmas ########
