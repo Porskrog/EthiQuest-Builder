@@ -93,16 +93,13 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
             raise ValueError("If last_dilemma and last_option are not provided, user_id must be provided.")
         # Fetch them if they weren't provided (this assumes user.id is accessible from here)
         last_dilemma, last_option = get_last_dilemma_and_option(user_id)
-
-    # Base prompt for GPT-4
-    base_prompt = "Please generate an ethical and leadership dilemma related to program management."
-    
+  
     # Decide whether to make the new dilemma consequential of the former dilemma
     # make_consequential = choice([True, False])
     make_consequential = choice([True, True, False])
 
     # Generate the prompt for GPT-4
-    base_prompt = "Please generate an ethical and leadership dilemma related to program management."
+    base_prompt = "Please generate an ethical and leadership dilemma related to program management with either two or three options. If the dilemma is more straightforward, provide two options and ONLY if it's more complex and warrants a third option, provide three options."
     if make_consequential and last_dilemma and last_option:
         full_prompt = f"{base_prompt} It must be a direct consequence of the previous dilemma which was: {last_dilemma.question} and the chosen option which was: {last_option.text}"
     else:
