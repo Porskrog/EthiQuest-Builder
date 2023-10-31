@@ -283,7 +283,6 @@ def fetch_random_dilemma():
     try:
         # Fetch a random dilemma from the database
         random_dilemma = Dilemma.query.order_by(func.rand()).first()
-        logging.info(f"200 OK: Successfully fetched a random dilemma: {random_dilemma}")
 
         if random_dilemma:
             logging.info(f"200 OK: Successfully fetched a random dilemma: {random_dilemma}")

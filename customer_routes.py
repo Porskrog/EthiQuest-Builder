@@ -224,6 +224,10 @@ def get_dilemma():
         if last_dilemma is None or last_option is None:
             try:
                 selected_dilemma = fetch_random_dilemma()
+        
+                # Fetch related options using utility function
+                related_options = fetch_related_options(selected_dilemma.id)
+                logging.info(f"200 OK: Successfully fetched a dilemma for the user with user id: {user_id}.")
             except Exception as e:
                 logging.error(f"Database error: {e}")
                 return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
