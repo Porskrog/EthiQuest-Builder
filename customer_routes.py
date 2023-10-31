@@ -247,7 +247,7 @@ def get_dilemma():
                     # Use the utility function to add a new entry in the OptionDilemmaRelation table
                     add_option_dilemma_relation(last_option.id, selected_dilemma.id, 'ConsequenceOf')
             else:
-                logging.info(f"200 OK: Consequential is False {is_consequential} and Random is {is_random}")
+                logging.info(f"200 OK: Consequential is {is_consequential} and Random is {is_random}")
                 ######## Need to add logic for randomly selecting from the list of unviewed dilemmas ########
                 # Fetch a random dilemma
                 selected_dilemma = fetch_random_dilemma()
@@ -257,8 +257,7 @@ def get_dilemma():
             logging.info(f"200 OK: Successfully fetched a dilemma for the user with user id: {user_id}.")
             logging.info(f"200 OK: The dilemma: {selected_dilemma}")
             logging.info(f"200 OK: The related options: {related_options}")
-            logging.info(f"200 OK: Is aconsequence of the last dilemma: {last_dilemma}")
-            return prepare_dilemma_json_response(selected_dilemma, related_options)
+            logging.info(f"200 OK: Is aconsequence of the last dilemma: {last_dilemma} and last option: {last_option}") 
     except Exception as e:
         logging.error(f"Database error: {e}")
         return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
@@ -269,7 +268,8 @@ def get_dilemma():
     if status_code != 201:
         return jsonify({"status": "failure", "message": message}), status_code
 
-    return jsonify({"status": "success", "message": "Successfully returned dilemma"}), 200
+    return prepare_dilemma_json_response(selected_dilemma, related_options)
+    logging.info(f"200 OK: Successfully returned dilemma")
 
 ######################################################################################################
 #  5. Mark dilemma as viewed                                                                         # 
