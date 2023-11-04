@@ -49,7 +49,7 @@ class Category(db.Model):
     __tablename__ = 'Category'
     CategoryID = db.Column(db.Integer, primary_key=True)
     CategoryName = db.Column(db.String(50))
-    CategoryTypeID = db.Column(db.Integer, db.ForeignKey('category_type.CategoryTypeID'))
+    CategoryTypeID = db.Column(db.Integer, db.ForeignKey('CategoryType.CategoryTypeID'))
     Weight = db.Column(db.Integer)
 
 class CategoryType(db.Model):
