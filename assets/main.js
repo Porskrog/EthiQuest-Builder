@@ -1,6 +1,19 @@
 <script type="text/javascript"> 
 jQuery(document).ready(function($) {
 
+    // Replace this with your deployed API URL
+    const API_URL = 'https://ethiquest-builder.onrender.com/customer';
+
+    // Target the chatbot placeholders and apply classes
+    $('#chatbot-CHAIRMAN').addClass('chatbot chatbot-left');
+    $('#chatbot-CIO').addClass('chatbot chatbot-right');
+    $('#chatbot-CHANGE-LEAD').addClass('chatbot chatbot-right');
+
+    // Then inject the shortcodes into the placeholders
+    $('#chatbot-CHAIRMAN').html('[mwai_chatbot_v2 id="chatbot-CHAIRMAN" icon_position="bottom-left"]');
+    $('#chatbot-CIO').html('[mwai_chatbot_v2 id="chatbot-CIO" icon_position="bottom-left"]');
+    $('#chatbot-CHANGE-LEAD').html('[mwai_chatbot_v2 id="chatbot-CHANGE-LEAD" icon_position="bottom-left"]');
+
     // --------------------------------------------------------------------
     // Function definitions
     // --------------------------------------------------------------------
@@ -70,7 +83,7 @@ jQuery(document).ready(function($) {
     function updateToggleSetting(toggleName, state) {
         $.ajax({
             type: 'POST',
-            url: `${API_URL}/update_toggle_setting`,
+            url: `${API_URL}/update_toggle_settings`,
             data: JSON.stringify({
                 cookie_id: userCookie, // corrected to cookie_id
                 toggle_name: toggleName,
@@ -78,7 +91,7 @@ jQuery(document).ready(function($) {
             }),
             contentType: "application/json; charset=utf-8",
             success: function(response) {
-                console.log("Toggle setting updated:", response);
+                console.log("Toggle settings updated:", response);
             }
         });
     }
@@ -168,9 +181,6 @@ jQuery(document).ready(function($) {
     // --------------------------------------------------------------------
     // Event handlers and API calls
     // --------------------------------------------------------------------
-
-    // Replace this with your deployed API URL
-    const API_URL = 'https://ethiquest-builder.onrender.com/customer';
 
     let currentDilemmaID = null; 
     let userCookie = getCookie("userCookie");

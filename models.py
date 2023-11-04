@@ -45,6 +45,27 @@ class OptionDilemmaRelation(db.Model):
     DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'))
     RelationType = db.Column(db.Enum('OptionFor', 'ConsequenceOf'))
 
+class Category(db.Model):
+    __tablename__ = 'Category'
+    CategoryID = db.Column(db.Integer, primary_key=True)
+    CategoryName = db.Column(db.String(50))
+    CategoryTypeID = db.Column(db.Integer, db.ForeignKey('category_type.CategoryTypeID'))
+    Weight = db.Column(db.Integer)
+
+class CategoryType(db.Model):
+    __tablename__ = 'CategoryType'
+    CategoryTypeID = db.Column(db.Integer, primary_key=True)
+    TypeName = db.Column(db.String(50))
+
+    # Relationship to Category
+    categories = db.relationship('Category', backref='type', lazy=True)
+    
+# Association table for the many-to-many relationship between Dilemmas and Category
+class DilemmaCategory(db.Model):
+    __tablename__ = 'DilemmaCategory'
+    DilemmaID = db.Column(db.Integer, db.ForeignKey('Dilemmas.id'), primary_key=True)
+    CategoryID = db.Column(db.Integer, db.ForeignKey('Category.CategoryID'), primary_key=True)
+
 # Combined User table
 class User(db.Model):
     __tablename__ = 'Users'
