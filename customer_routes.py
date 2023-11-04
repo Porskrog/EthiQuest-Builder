@@ -92,8 +92,8 @@ def handle_paying_user(user_id):
 #                                        Route Handlers                                              #
 #                                                                                                    #
 # Sequence of functions:                                                                             #
-# 1. get_toggle_setting                                                                              #
-# 2. update_toggle_setting                                                                           #
+# 1. get_toggle_settings                                                                             #
+# 2. update_toggle_settings                                                                          #
 # 3. get_unviewed_dilemmas(user_id)                                                                  #
 # 4. get_dilemma                                                                                     #
 # 5. view_dilemma (mark dilemmaas viewed)                                                            #
