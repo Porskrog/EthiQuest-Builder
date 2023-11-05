@@ -1,8 +1,8 @@
 from flask import jsonify
 from extensions import db
 from app import cache
-from models import Project, Dilemma, Option, ContextCharacteristic, DilemmasContextCharacteristic, OptionDilemmaRelation, UserChoice, ViewedDilemma
-from sqlalchemy import func, desc
+from models import Project, UserProjectRelation, Stakeholder, Role, ProjectStakeholder, Risks 
+from sqlalchemy import func, desc, Integer, String, Text, Date, BIGINT, DECIMAL
 from random import choice
 from datetime import datetime
 import logging
@@ -19,27 +19,20 @@ logging.basicConfig(level=logging.INFO)
 # Utility Functions - getting and storing project data for users                                     #
 ######################################################################################################
 
-# Get project data from the database
-def get_project_data_from_db(user_id):
-    # Get the project ID for the user
-    project_id = get_project_id(user_id)
-    # If the user has not been assigned a project, return None
-    if project_id is None:
-        return None
-    # Get the project data from the database
-    project_data = Project.query.filter_by(id=project_id).first()
-    # Return the project data
-    return project_data
+# Get all projects from the database
+def get_all_projects():
+    projects = Project.query.all()
+    return projects
 
+# Get all projects chosen by a user
+def get_user_projects(user_id):
+    user_projects = Project.query.join(UserProjectRelation).filter(UserProjectRelation.UserID == user_id).all()
+    return user_projects
 
-# Get project data for a user
-def get_project_data(user_id):
-    project_data = get_project_data_from_db(user_id)
-    # If the user has not been assigned a project, assign one
-    if project_data is None:
-        project_data = assign_project(user_id)
-    # Return the project data
-    return project_data
+# Get all stakeholders for a project including their roles
+def get_project_stakeholders_with_roles(project_id):
+    project_stakeholders = Stakeholder.query.join(ProjectStakeholder).join(Role).filter(ProjectStakeholder.ProjectID == project_id).all()
+    return project_stakeholders
 
 
 
