@@ -5,6 +5,92 @@ from datetime import datetime
 # Database tables for the Dilemmas, Options, ContextCharacteristics, DilemmaContextCharacteristics, Users, UserChoices, ViewedDilemmas  #
 ##################################################################################
 
+# Projects table
+class Project(db.Model):
+    __tablename__ = 'Projects'
+    id = db.Column(Integer, primary_key=True)
+    Name = db.Column(String(255), nullable=False)
+    Budget = db.Column(BIGINT)
+    Currency = db.Column(String(3), nullable=False, default="USD")
+    Timeline = db.Column(String(100))
+    PlannedStart = db.Column(Date, nullable=False)
+    ActualStart = db.Column(Date, nullable=False)
+    PlannedEnd = db.Column(Date, nullable=False)
+    EstimatedCompletion = db.Column(Date, nullable=False)
+    Scope = db.Column(Text)
+    TeamSize = db.Column(Integer)
+    Description = db.Column(Text)
+    QualitativeBenefits = db.Column(Text)
+    ExpectedROI = db.Column(DECIMAL(10,2))
+    CostSavings = db.Column(BIGINT)
+    EfficiencyGain = db.Column(DECIMAL(10,2))
+    SpentToDate = db.Column(Integer, nullable=False)
+    ProjectedCostAtCompletion = db.Column(Integer, nullable=False)
+    CurrentCostOverrun = db.Column(Integer, nullable=False)
+    ContingencyReserve = db.Column(Integer, nullable=False)
+    
+    # User Project Relations
+    user_project_relations = db.relationship('UserProjectRelation', backref='project', lazy=True)
+
+    # Project Stakeholder Relations
+    project_stakeholder_relations = db.relationship('ProjectStakeholder', backref='project', lazy=True)
+
+    # Project Risk Relations
+    project_risk_relations = db.relationship('Risks', backref='project', lazy=True)
+
+
+# ProjectStakeholders table
+class ProjectStakeholder(db.Model):
+    __tablename__ = 'ProjectStakeholders'
+    ProjectID = db.Column(Integer, primary_key=True, db.ForeignKey('Projects.id'))
+    StakeholderID = db.Column(Integer, primary_key=True, db.ForeignKey('Stakeholders.id'))
+    RoleID = db.Column(Integer, primary_key=True, db.ForeignKey('StakeholderRoles.id'))
+
+# Stakeholders table
+class Stakeholder(db.Model):
+    __tablename__ = "Stakeholders"
+    id = db.Column(Integer, primary_key=True)
+    Name = db.Column(String(255), nullable=False)
+    Notes = db.Column(Text)
+
+# Roles table
+class Role(db.Model):
+    __tablename__ = "StakeholderRoles"
+    id = db.Column(Integer, primary_key=True)
+    Name = db.Column(String(255), nullable=False)
+    Notes = db.Column(Text)
+
+
+# ProjectRisks table
+class Risks(db.Model):
+    __tablename__ = 'Risks'
+    id = db.Column(db.Integer, primary_key=True)
+    ProjectID = db.Column(db.Integer, db.ForeignKey('Projects.id'))
+    IdentifiedBy = db.Column(db.Integer, db.ForeignKey('Stakeholders.id'))
+    CurrentConcern = db.Column(Text)
+    PotentialEvent = db.Column(Text)
+    PotentialImpact = db.Column(Text)
+    Likelihood = db.Column(Enum('Low', 'Medium', 'High'))
+    MitigationStrategies = db.Column(Text)
+    Status = db.Column(Enum('Open', 'In Progress', 'Closed', 'Realized'), default='Open')
+    Acknowledged = db.Column(TINYINT(1), default=0)
+    ActionTaken = db.Column(TINYINT(1), default=0)
+    DateIdentified = db.Column(Date)
+    DateAcknowledged = db.Column(Date)
+    DateActionTaken = db.Column(Date)
+    DateResolved = db.Column(Date)
+
+    # Project Risk relations - backreference to foreign key from Projects table
+    project_risk_relations = db.relationship('ProjectRisk', backref='risk', lazy=True)
+
+# ProjectUserRelations table
+class UserProjectRelation(db.Model):
+    __tablename__ = 'UserProjectRelations'
+    UserProjectRelationID = db.Column(Integer, primary_key=True)
+    ProjectID = db.Column(Integer, db.ForeignKey('Projects.id'))
+    UserID = db.Column(Integer, db.ForeignKey('Users.id'))
+
+
 # Dilemmas table
 class Dilemma(db.Model):
     __tablename__ = 'Dilemmas'

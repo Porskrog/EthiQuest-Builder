@@ -61,6 +61,26 @@ def fetch_unviewed_dilemmas(user_id):
     logging.info(f"200 OK: Successfully fected unviewed dilemmas for user id: {user_id}")
     return choice(unviewed_dilemmas)
 
+# Fetch all choices made by a user in timestamp order
+def fetch_all_choices(user_id):
+    choices = UserChoice.query.filter_by(UserID=user_id).order_by(UserChoice.Timestamp).all()
+    logging.info(f"200 OK: Successfully fetched all choices for user id: {user_id}")
+
+    # If there are no choices, return None
+    if not choices:
+        return None
+    
+    # For each choice, fetch the dilemma and option chosen
+    for choice in choices:
+        choice.dilemma = Dilemma.query.get(choice.DilemmaID)
+        choice.option = Option.query.get(choice.OptionID)
+
+        logging.info(f"200 OK: Successfully fetched the dilemma and option for choice: {choice}")
+        logging.info(f"200 OK: Dilemma: {choice.dilemma}, Option: {choice.option}, Timestamp: {choice.Timestamp}")
+    
+    # Otherwise, return the list of choices
+    return choices
+
 # Fetch the last dilemma and option chosen by this user from the database.
 def get_last_dilemma_and_option(user_id, return_choice_object=False):
     last_choice = UserChoice.query.filter_by(UserID=user_id).order_by(UserChoice.Timestamp.desc()).first()

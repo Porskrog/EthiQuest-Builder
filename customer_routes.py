@@ -32,9 +32,9 @@ CORS(customer_bp, origins=["https://flow.camp"])
 ######################################################################################################
 
 
-@customer_bp.route('/get_data')
-def get_customer_data():
-    return jsonify({"data": "customer data"})
+# @customer_bp.route('/get_data')
+# def get_customer_data():
+#    return jsonify({"data": "customer data"})
 
 
 # Function to get or create a user
@@ -52,39 +52,6 @@ def get_or_create_user(cookie_id):
         return None
     return user
 
-
-def handle_free_user(user_id):
-    unviewed_dilemmas = fetch_unviewed_dilemmas(user_id)
-
-    # If there are no unviewed dilemmas, handle that case
-    if not unviewed_dilemmas:
-        return None, {"status": "failure", "message": "No new dilemmas available"}, 404
-
-    logging.info(f"200 OK: Successfully selected a dilemma for user  {user_id}.")
-
-    # Pick a random dilemma from the list of unviewed dilemmas
-    selected_dilemma = choice(unviewed_dilemmas)
-    
-    return selected_dilemma, None, None
-
-
-def handle_paying_user(user_id):
-    # Fetch the last dilemma and option for this user from the database
-    last_dilemma, last_option = get_last_dilemma_and_option(user_id)
-    # Using utility function to generate a new dilemma in GPT-4
-    generated_dilemma, generated_options = generate_new_dilemma_with_gpt4(last_dilemma, last_option, user_id)
-    
-    # Store this new dilemma and options in your database
-    # Insert Context Characteristics and update the many-to-many table
-    context_list = generated_dilemma['Context'].split(", ")
-    description = generated_dilemma['Description']
-    selected_dilemma = add_new_dilemma_and_options_to_db(context_list, description, generated_options)
-
-    logging.info(f"200 OK: Successfully generated and stored a new dilemma for user {user_id}")
-
-    # Fetch or generate consequential dilemmas
-    next_dilemmas = fetch_or_generate_consequential_dilemmas(selected_dilemma.id, user_id)
-    return selected_dilemma, next_dilemmas, None
 
 ######################################################################################################
 #                                                                                                    #
@@ -302,7 +269,7 @@ def view_dilemma(dilemma_id):
     return jsonify({"status": "success" if status_code == 201 else "failure", "message": message}), status_code
 
 ######################################################################################################
-#  6. Get Option Details API endpoint for ALL users (free and paying)                                # 
+#  6. Get Option Details API endpoint for ALL users                                                  # 
 ######################################################################################################
 
 @customer_bp.route('/get_option_details/<OptionID>', methods=['GET'])
