@@ -42,10 +42,11 @@ class Project(db.Model):
 # ProjectStakeholders table
 class ProjectStakeholder(db.Model):
     __tablename__ = 'ProjectStakeholders'
-    ProjectID = db.Column(Integer, primary_key=True, db.ForeignKey('Projects.id'))
-    StakeholderID = db.Column(Integer, primary_key=True, db.ForeignKey('Stakeholders.id'))
-    RoleID = db.Column(Integer, primary_key=True, db.ForeignKey('StakeholderRoles.id'))
-
+    ProjectID = db.Column(db.Integer, db.ForeignKey('Projects.id'), primary_key=True)
+    StakeholderID = db.Column(db.Integer, db.ForeignKey('Stakeholders.id'), primary_key=True)
+    RoleID = db.Column(db.Integer, db.ForeignKey('StakeholderRoles.id'), primary_key=True)
+    Notes = db.Column(Text)
+    
 # Stakeholders table
 class Stakeholder(db.Model):
     __tablename__ = "Stakeholders"
