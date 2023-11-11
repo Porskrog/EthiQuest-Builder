@@ -1,3 +1,4 @@
+from sqlalchemy import Integer
 from extensions import db
 from datetime import datetime
 
@@ -8,26 +9,26 @@ from datetime import datetime
 # Projects table
 class Project(db.Model):
     __tablename__ = 'Projects'
-    id = db.Column(Integer, primary_key=True)
-    Name = db.Column(String(255), nullable=False)
-    Budget = db.Column(BIGINT)
-    Currency = db.Column(String(3), nullable=False, default="USD")
-    Timeline = db.Column(String(100))
-    PlannedStart = db.Column(Date, nullable=False)
-    ActualStart = db.Column(Date, nullable=False)
-    PlannedEnd = db.Column(Date, nullable=False)
-    EstimatedCompletion = db.Column(Date, nullable=False)
-    Scope = db.Column(Text)
-    TeamSize = db.Column(Integer)
-    Description = db.Column(Text)
-    QualitativeBenefits = db.Column(Text)
-    ExpectedROI = db.Column(DECIMAL(10,2))
-    CostSavings = db.Column(BIGINT)
-    EfficiencyGain = db.Column(DECIMAL(10,2))
-    SpentToDate = db.Column(Integer, nullable=False)
-    ProjectedCostAtCompletion = db.Column(Integer, nullable=False)
-    CurrentCostOverrun = db.Column(Integer, nullable=False)
-    ContingencyReserve = db.Column(Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    Name = db.Column(db.String(255), nullable=False)
+    Budget = db.Column(db.BIGINT)
+    Currency = db.Column(db.String(3), nullable=False, default="USD")
+    Timeline = db.Column(db.String(100))
+    PlannedStart = db.Column(db.Date, nullable=False)
+    ActualStart = db.Column(db.Date, nullable=False)
+    PlannedEnd = db.Column(db.Date, nullable=False)
+    EstimatedCompletion = db.Column(db.Date, nullable=False)
+    Scope = db.Column(db.Text)
+    TeamSize = db.Column(db.Integer)
+    Description = db.Column(db.Text)
+    QualitativeBenefits = db.Column(db.Text)
+    ExpectedROI = db.Column(db.DECIMAL(10,2))
+    CostSavings = db.Column(db.BIGINT)
+    EfficiencyGain = db.Column(db.DECIMAL(10,2))
+    SpentToDate = db.Column(db.Integer, nullable=False)
+    ProjectedCostAtCompletion = db.Column(db.Integer, nullable=False)
+    CurrentCostOverrun = db.Column(db.Integer, nullable=False)
+    ContingencyReserve = db.Column(db.Integer, nullable=False)
     
     # User Project Relations
     user_project_relations = db.relationship('UserProjectRelation', backref='project', lazy=True)
@@ -45,21 +46,21 @@ class ProjectStakeholder(db.Model):
     ProjectID = db.Column(db.Integer, db.ForeignKey('Projects.id'), primary_key=True)
     StakeholderID = db.Column(db.Integer, db.ForeignKey('Stakeholders.id'), primary_key=True)
     RoleID = db.Column(db.Integer, db.ForeignKey('StakeholderRoles.id'), primary_key=True)
-    Notes = db.Column(Text)
+    Notes = db.Column(db.Text)
     
 # Stakeholders table
 class Stakeholder(db.Model):
     __tablename__ = "Stakeholders"
-    id = db.Column(Integer, primary_key=True)
-    Name = db.Column(String(255), nullable=False)
-    Notes = db.Column(Text)
+    id = db.Column(db.Integer, primary_key=True)
+    Name = db.Column(db.String(255), nullable=False)
+    Notes = db.Column(db.Text)
 
 # Roles table
 class Role(db.Model):
     __tablename__ = "StakeholderRoles"
-    id = db.Column(Integer, primary_key=True)
-    Name = db.Column(String(255), nullable=False)
-    Notes = db.Column(Text)
+    id = db.Column(db.Integer, primary_key=True)
+    Name = db.Column(db.String(255), nullable=False)
+    Notes = db.Column(db.Text)
 
 
 # ProjectRisks table
@@ -68,18 +69,18 @@ class Risks(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ProjectID = db.Column(db.Integer, db.ForeignKey('Projects.id'))
     IdentifiedBy = db.Column(db.Integer, db.ForeignKey('Stakeholders.id'))
-    CurrentConcern = db.Column(Text)
-    PotentialEvent = db.Column(Text)
-    PotentialImpact = db.Column(Text)
-    Likelihood = db.Column(Enum('Low', 'Medium', 'High'))
-    MitigationStrategies = db.Column(Text)
-    Status = db.Column(Enum('Open', 'In Progress', 'Closed', 'Realized'), default='Open')
-    Acknowledged = db.Column(TINYINT(1), default=0)
-    ActionTaken = db.Column(TINYINT(1), default=0)
-    DateIdentified = db.Column(Date)
-    DateAcknowledged = db.Column(Date)
-    DateActionTaken = db.Column(Date)
-    DateResolved = db.Column(Date)
+    CurrentConcern = db.Column(db.Text)
+    PotentialEvent = db.Column(db.Text)
+    PotentialImpact = db.Column(db.Text)
+    Likelihood = db.Column(db.Enum('Low', 'Medium', 'High'))
+    MitigationStrategies = db.Column(db.Text)
+    Status = db.Column(db.Enum('Open', 'In Progress', 'Closed', 'Realized'), default='Open')
+    Acknowledged = db.Column(db.TINYINT(1), default=0)
+    ActionTaken = db.Column(db.TINYINT(1), default=0)
+    DateIdentified = db.Column(db.Date)
+    DateAcknowledged = db.Column(db.Date)
+    DateActionTaken = db.Column(db.Date)
+    DateResolved = db.Column(db.Date)
 
     # Project Risk relations - backreference to foreign key from Projects table
     project_risk_relations = db.relationship('ProjectRisk', backref='risk', lazy=True)
@@ -87,9 +88,9 @@ class Risks(db.Model):
 # ProjectUserRelations table
 class UserProjectRelation(db.Model):
     __tablename__ = 'UserProjectRelations'
-    UserProjectRelationID = db.Column(Integer, primary_key=True)
-    ProjectID = db.Column(Integer, db.ForeignKey('Projects.id'))
-    UserID = db.Column(Integer, db.ForeignKey('Users.id'))
+    UserProjectRelationID = db.Column(db.Integer, primary_key=True)
+    ProjectID = db.Column(db.Integer, db.ForeignKey('Projects.id'))
+    UserID = db.Column(db.Integer, db.ForeignKey('Users.id'))
 
 
 # Dilemmas table
