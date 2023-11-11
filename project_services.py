@@ -33,6 +33,3 @@ def get_user_projects(user_id):
 def get_project_stakeholders_with_roles(project_id):
     project_stakeholders = Stakeholder.query.join(ProjectStakeholder).join(Role).filter(ProjectStakeholder.ProjectID == project_id).all()
     return project_stakeholders
-
-
-
