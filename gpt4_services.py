@@ -38,7 +38,7 @@ def call_gpt4_api(full_prompt):
         # Calculate and log the duration
         duration = end_time - start_time
         logging.info(f"GPT-4 API call took {duration} seconds.")
-        print(f"Generated text: {generated_text}")  # Debugging line
+        logging.info(f"Generated text: {generated_text}")
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
