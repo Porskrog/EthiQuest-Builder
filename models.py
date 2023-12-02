@@ -83,7 +83,7 @@ class Risks(db.Model):
     DateResolved = db.Column(db.Date)
 
     # Project Risk relations - backreference to foreign key from Projects table
-    project_risk_relations = db.relationship('ProjectRisk', backref='risk', lazy=True)
+    # project_risk_relations = db.relationship('ProjectRisk', backref='risk', lazy=True)
 
 # ProjectUserRelations table
 class UserProjectRelation(db.Model):
