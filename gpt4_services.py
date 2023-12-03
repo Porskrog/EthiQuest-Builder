@@ -35,14 +35,7 @@ def call_gpt4_api(full_prompt):
         print(completion.choices[0].text)
         print(dict(completion).get('usage'))
         print(completion.model_dump_json(indent=2))
-        generated_text = completion.choices[0].text
-        # generated_text = response.choices[0].text.strip()  # Correctly extracting text
-        # generated_text = response['choices'][0]['text'].strip()  # Correctly extracting text
-        # generated_text = response['choices'][0]['text']  # Correctly extracting text
-        # generated_text = response['choices'][0]['message']['text']  # Correctly extracting text
-        # generated_text = response['choices'][0]['message']['text'].strip()  # Correctly extracting text
-        # generated_text = response['choices'][0]['message']['content'].strip()  # Correctly extracting text
-        # generated_text = response['choices'][0]['message']['content']
+        generated_text = response.choices[0].text.strip()
         # Record the time after the API call
         end_time = time.time()
         # Calculate and log the duration
