@@ -36,10 +36,6 @@ def call_gpt4_api(full_prompt):
         # Process the response
         generated_text = completion.choices[0].text
 
-        print(completion.choices[0].text)
-        print(dict(completion).get('usage'))
-        print(completion.model_dump_json(indent=2))
-
         # Record the time after the API call
         end_time = time.time()
         # Calculate and log the duration
@@ -48,12 +44,11 @@ def call_gpt4_api(full_prompt):
         logging.info(f"Generated text: {generated_text}")
     except Exception as e:
         print(f"An error occurred: {e}")
-        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
+        return None, 500
     
     logging.info(f"200 OK: Successfully called GPT-4 API.")
     # return generated_text
-    return jsonify({"text": generated_text})  # Return the response as a JSON object
-
+    return generated_text, 200  # Return the generated text and a success status code
 
 def parse_gpt4_response(generated_text):
     # Parsing logic to extract the dilemma, options, pros, and cons from the generated_text
@@ -139,9 +134,16 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
     try:
         # API call to GPT-4 (assuming you have a function or method for this)
         response = call_gpt4_api(full_prompt)
+
+        generated_text, status_code = call_gpt4_api(full_prompt)
+        if status_code != 200:
+            return jsonify({"status": "failure", "message": "Error in GPT-4 API call"}), status_code
+
+        parsed_response = parse_gpt4_response(generated_text)
         
         # Parsing logic (assuming you have a function or method for this)
-        parsed_response = parse_gpt4_response(response)
+        parsed_response = parse_gpt4_response(generated_text)
+        # parsed_response = parse_gpt4_response(response)
 
         # Return the parsed response        
         logging.info(f"200 OK: Successfully generated a new dilemma with GPT-4: {parsed_response}")
