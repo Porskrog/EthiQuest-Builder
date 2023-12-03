@@ -81,21 +81,18 @@ jQuery(document).ready(function($) {
         
     // Function to update toggle setting in the backend
     function updateToggleSetting(toggleId, newState) {
-        console.log("Updating Toggle:", toggleId, "State:", newState); // Debugging log
         let toggleData = {
-            cookie_id: userCookie, 
-            random: isRandom, 
-            consequential: isConsequential 
+            cookie_id: userCookie,
+            random: isRandom,
+            consequential: isConsequential
         };
     
-        // Update the correct toggle based on the toggleId
         if (toggleId === "randomToggle") {
             toggleData.random = newState;
         } else if (toggleId === "consequentialToggle") {
             toggleData.consequential = newState;
         }
-
-        // Perform the AJAX request
+    
         $.ajax({
             type: 'POST',
             url: `${API_URL}/update_toggle_settings`,
@@ -108,7 +105,7 @@ jQuery(document).ready(function($) {
                 console.error("Error updating toggle settings:", error);
             }
         });
-    }
+    }    
     
     
     // Function to fetch random dilemma
@@ -248,15 +245,13 @@ jQuery(document).ready(function($) {
         } else {
             $(this).css({ left: '0px' }).text('OFF');
         }
-
-        // Update the correct state based on the toggle ID
+    
         if (toggleId === "randomToggle") {
             isRandom = newState;
         } else if (toggleId === "consequentialToggle") {
             isConsequential = newState;
         }
-
-        // Call function to update the toggle setting in the backend
+    
         updateToggleSetting(toggleId, newState);
     });
     
