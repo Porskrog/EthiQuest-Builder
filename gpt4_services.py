@@ -22,14 +22,14 @@ def call_gpt4_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
-        completion = client.completions.create(
+        completion = client.chat.completions.create(
             model="gpt-4",
             prompt=full_prompt,
             max_tokens=250
         )
         # Process the response
+        # generated_text = completion.choices[0].text
         generated_text = completion.choices[0].text
-     
         # Calculate and log the duration
         duration = time.time() - start_time
         logging.info(f"GPT-4 API call took {duration} seconds.")
