@@ -16,13 +16,13 @@ HTTP_CREATED = 201
 logging.basicConfig(level=logging.INFO)
 
 # Initialize OpenAI API
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = OpenAI()
 
 def call_gpt4_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
-        completion = client.Completion.create(
+        completion = client.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a leadership dilemma generator."},
