@@ -239,14 +239,25 @@ jQuery(document).ready(function($) {
     // Event listeners for toggle buttons
     $('.toggle-button').click(function() {
         const toggleId = $(this).attr('id');
-        if ($(this).css('left') === '60px') {
-            $(this).css({ left: '0px' }).text('OFF');
-            updateToggleSetting(toggleId, false);
-        } else {
+        const newState = $(this).css('left') !== '60px';
+        
+        if (newState) {
             $(this).css({ left: '60px' }).text('ON');
-            updateToggleSetting(toggleId, true);
+        } else {
+            $(this).css({ left: '0px' }).text('OFF');
         }
+    
+        // Update the correct state based on the toggle ID
+        if (toggleId === "randomToggle") {
+            isRandom = newState;
+        } else if (toggleId === "consequentialToggle") {
+            isConsequential = newState;
+        }
+    
+        // Call function to update the toggle setting in the backend
+        updateToggleSetting(toggleId, newState);
     });
+    
 
 
     // Add a click event listener to option list items
