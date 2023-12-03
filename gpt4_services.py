@@ -16,7 +16,7 @@ HTTP_CREATED = 201
 logging.basicConfig(level=logging.INFO)
 
 # Initialize OpenAI API
-client = OpenAI()
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def call_gpt4_api(full_prompt):
     try:
