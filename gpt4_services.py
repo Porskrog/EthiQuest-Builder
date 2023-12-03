@@ -35,7 +35,7 @@ def call_gpt4_api(full_prompt):
         print(completion.choices[0].text)
         print(dict(completion).get('usage'))
         print(completion.model_dump_json(indent=2))
-        generated_text = response.choices[0].text.strip()
+        generated_text = response.choices[0].text()
         # Record the time after the API call
         end_time = time.time()
         # Calculate and log the duration
