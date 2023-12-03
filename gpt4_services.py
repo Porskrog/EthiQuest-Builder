@@ -51,7 +51,8 @@ def call_gpt4_api(full_prompt):
         return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
     
     logging.info(f"200 OK: Successfully called GPT-4 API.")
-    return generated_text
+    # return generated_text
+    return jsonify({"text": generated_text})  # Return the response as a JSON object
 
 
 def parse_gpt4_response(generated_text):
