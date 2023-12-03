@@ -80,21 +80,22 @@ jQuery(document).ready(function($) {
     }
         
     // Function to update toggle setting in the backend
-    function updateToggleSetting(toggleName, state) {
-        console.log("Updating Toggle:", toggleName, "State:", state); // Debugging log
-        let toggleData = { 
+    function updateToggleSetting(toggleId, newState) {
+        console.log("Updating Toggle:", toggleId, "State:", newState); // Debugging log
+        let toggleData = {
             cookie_id: userCookie, 
             random: isRandom, 
             consequential: isConsequential 
         };
     
-        // Update the correct toggle based on the toggleName
-        if (toggleName === "randomToggle") {
-            toggleData.random = state;
-        } else if (toggleName === "consequentialToggle") {
-            toggleData.consequential = state;
+        // Update the correct toggle based on the toggleId
+        if (toggleId === "randomToggle") {
+            toggleData.random = newState;
+        } else if (toggleId === "consequentialToggle") {
+            toggleData.consequential = newState;
         }
-    
+
+        // Perform the AJAX request
         $.ajax({
             type: 'POST',
             url: `${API_URL}/update_toggle_settings`,
@@ -247,19 +248,18 @@ jQuery(document).ready(function($) {
         } else {
             $(this).css({ left: '0px' }).text('OFF');
         }
-    
+
         // Update the correct state based on the toggle ID
         if (toggleId === "randomToggle") {
             isRandom = newState;
         } else if (toggleId === "consequentialToggle") {
             isConsequential = newState;
         }
-    
+
         // Call function to update the toggle setting in the backend
         updateToggleSetting(toggleId, newState);
     });
     
-
 
     // Add a click event listener to option list items
     $(document).on('click', '.option-item', function() {
