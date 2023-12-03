@@ -32,10 +32,7 @@ def call_gpt4_api(full_prompt):
             ],
             max_tokens=250
         )
-        print(completion.choices[0].text)
-        print(dict(completion).get('usage'))
-        print(completion.model_dump_json(indent=2))
-        generated_text = response.choices[0].text()
+        generated_text = response.choices[0].text
         # Record the time after the API call
         end_time = time.time()
         # Calculate and log the duration
@@ -54,26 +51,30 @@ def parse_gpt4_response(generated_text):
     # Parsing logic to extract the dilemma, options, pros, and cons from the generated_text
     try:
         # Split the generated text into lines
-        lines = generated_text.strip().split("\n")
+        lines = generated_text.split("\n")
 
         # Initialize empty dictionaries to hold the parsed information
         dilemma = {}
         options = []
+        option = {}
 
         # Loop over the lines and parse them
         for line in lines:
-            if "Context:" in line:
-                dilemma['Context'] = line.split(":", 1)[1].strip()
-            elif "Description:" in line:
-                dilemma['Description'] = line.split(":", 1)[1].strip()
-            elif "Option " in line:
-                option = {}
-                option['text'] = line.split(":", 1)[1].strip()
-            elif "- Pros:" in line:
-                option['pros'] = line.split(":", 1)[1].strip().split(", ")
-            elif "- Cons:" in line:
-                option['cons'] = line.split(":", 1)[1].strip().split(", ")
-                options.append(option)  # Only append the option once it's fully formed
+            if line.startswith("Context:"):
+                dilemma['Context'] = line.split("Context:", 1)[1].strip()
+            elif line.startswith("Description:"):
+                dilemma['Description'] = line.split("Description:", 1)[1].strip()
+            elif line.startswith("Option"):
+                if option:  # If there is a previous option, add it to the list
+                    options.append(option)
+                option = {'text': line.split(":", 1)[1].strip()}
+            elif line.startswith("- Pros:"):
+                option['pros'] = line.split("Pros:", 1)[1].strip().split(", ")
+            elif line.startswith("- Cons:"):
+                option['cons'] = line.split("Cons:", 1)[1].strip().split(", ")
+
+        if option:  # Add the last option if it exists
+            options.append(option)
 
         # Validate that we have all the necessary components
         if 'Context' not in dilemma or 'Description' not in dilemma:
