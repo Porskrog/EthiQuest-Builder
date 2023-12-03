@@ -81,6 +81,7 @@ jQuery(document).ready(function($) {
         
     // Function to update toggle setting in the backend
     function updateToggleSetting(toggleName, state) {
+        console.log("Updating Toggle:", toggleName, "State:", state); // Debugging log
         let toggleData = { 
             cookie_id: userCookie, 
             random: isRandom, 
@@ -237,7 +238,7 @@ jQuery(document).ready(function($) {
     });
 
     // Event listeners for toggle buttons
-    $('.toggle-button').click(function() {
+    $(document).on('click', '.toggle-button', function() {
         const toggleId = $(this).attr('id');
         const newState = $(this).css('left') !== '60px';
         
