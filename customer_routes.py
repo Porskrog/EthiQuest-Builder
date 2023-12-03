@@ -104,36 +104,40 @@ def get_toggle_settings():
 
 @customer_bp.route('/update_toggle_settings', methods=['POST'])
 def update_toggle_settings():
-    # Log the incoming request
     logging.info("200 OK: Received request to update toggles")
-
-    # Fetch the cookie ID from query parameters
-    # cookie_id = request.args.get('user_id')
 
     data = request.get_json()
     logging.info(f"Received data: {data}")
     cookie_id = data.get('cookie_id')
 
-    user = get_or_create_user(cookie_id) # Get or create the user  
+    if not cookie_id:
+        logging.error("Missing cookie_id in the request")
+        return jsonify({"status": "failure", 'message': 'Missing cookie_id'}), 400
+
+    user = get_or_create_user(cookie_id)
     if not user:
         logging.error("404 Not Found: User could not be created")
         return jsonify({"status": "failure", 'message': 'User not found'}), 404
-    
-    # Fetch the random and consequential fields from the request
+
     is_random = data.get('random')
     is_consequential = data.get('consequential')
 
-    # Update the user model
+    if is_random is None or is_consequential is None:
+        logging.error("Missing toggle data in the request")
+        return jsonify({"status": "failure", 'message': 'Missing toggle data'}), 400
+
     user.Random = is_random
     user.Consequential = is_consequential
+
     try:
         db.session.commit()
+        logging.info(f"200 OK: Successfully updated toggles for user {user.id}")
+        return jsonify({'random': is_random, 'consequential': is_consequential})
     except Exception as e:
         logging.error(f"Database commit failed: {e}")
+        db.session.rollback()
         return jsonify({"status": "failure", 'message': 'Database commit failed'}), 500
 
-    logging.info(f"200 OK: Successfully updated toggles for user {user.id}, Random: {user.Random}, Consequential: {user.Consequential}")
-    return jsonify({'random': is_random, 'consequential': is_consequential})
 
 ######################################################################################################
 #  3. Get Unviewed Dilemmas                                                                          #
@@ -173,8 +177,8 @@ def get_dilemma():
     data = request.get_json() # Get the JSON data from the request
     logging.info(f"Received data: {data}")
     user_id = data.get('user_id', None) # Get the user ID from the request
-    is_random = data.get('is_random', None) 
-    is_consequential = data.get('is_consequential', None) 
+    is_random = data.get('is_random', False) # Default to False if not provided
+    is_consequential = data.get('is_consequential', False) # Default to False if not provided
     logging.info(f"Get dilemma called with user id: {user_id}, Random: {is_random}, Consequential: {is_consequential}")
 
     last_dilemma = None
