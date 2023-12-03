@@ -24,10 +24,7 @@ def call_gpt4_api(full_prompt):
         start_time = time.time()
         completion = client.completions.create(
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a leadership dilemma generator."},
-                {"role": "user", "content": full_prompt}
-            ],
+            prompt=full_prompt,
             max_tokens=250
         )
         # Process the response
@@ -101,7 +98,8 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
     make_consequential = choice([True, True, False])
 
     # Generate the prompt for GPT-4
-    base_prompt = "Please generate an ethical and leadership dilemma related to program management with either two or three options. If the dilemma is more straightforward, provide two options and ONLY if it's more complex and warrants a third option, provide three options."
+    base_prompt = "You are a leadership dilemma generator.\n\n"  # System role instruction
+    base_prompt += "Please generate an ethical and leadership dilemma related to program management with either two or three options. If the dilemma is more straightforward, provide two options and ONLY if it's more complex and warrants a third option, provide three options."
     if make_consequential and last_dilemma and last_option:
         full_prompt = f"{base_prompt} It must be a direct consequence of the previous dilemma which was: {last_dilemma.question} and the chosen option which was: {last_option.text}"
     else:
