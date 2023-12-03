@@ -24,7 +24,7 @@ def call_gpt4_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
-        response = openai.Completion.create(
+        response = client.Completion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a leadership dilemma generator."},
@@ -32,7 +32,17 @@ def call_gpt4_api(full_prompt):
             ],
             max_tokens=250
         )
-        generated_text = response['choices'][0]['message']['content']
+        print(completion.choices[0].text)
+        print(dict(completion).get('usage'))
+        print(completion.model_dump_json(indent=2))
+        generated_text = completion.choices[0].text
+        # generated_text = response.choices[0].text.strip()  # Correctly extracting text
+        # generated_text = response['choices'][0]['text'].strip()  # Correctly extracting text
+        # generated_text = response['choices'][0]['text']  # Correctly extracting text
+        # generated_text = response['choices'][0]['message']['text']  # Correctly extracting text
+        # generated_text = response['choices'][0]['message']['text'].strip()  # Correctly extracting text
+        # generated_text = response['choices'][0]['message']['content'].strip()  # Correctly extracting text
+        # generated_text = response['choices'][0]['message']['content']
         # Record the time after the API call
         end_time = time.time()
         # Calculate and log the duration
