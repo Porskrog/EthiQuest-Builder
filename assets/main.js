@@ -81,20 +81,33 @@ jQuery(document).ready(function($) {
         
     // Function to update toggle setting in the backend
     function updateToggleSetting(toggleName, state) {
+        let toggleData = { 
+            cookie_id: userCookie, 
+            random: isRandom, 
+            consequential: isConsequential 
+        };
+    
+        // Update the correct toggle based on the toggleName
+        if (toggleName === "randomToggle") {
+            toggleData.random = state;
+        } else if (toggleName === "consequentialToggle") {
+            toggleData.consequential = state;
+        }
+    
         $.ajax({
             type: 'POST',
             url: `${API_URL}/update_toggle_settings`,
-            data: JSON.stringify({
-                cookie_id: userCookie, // corrected to cookie_id
-                toggle_name: toggleName,
-                state: state
-            }),
+            data: JSON.stringify(toggleData),
             contentType: "application/json; charset=utf-8",
             success: function(response) {
                 console.log("Toggle settings updated:", response);
+            },
+            error: function(error) {
+                console.error("Error updating toggle settings:", error);
             }
         });
     }
+    
     
     // Function to fetch random dilemma
     function fetchRandomDilemma(userId, isRandom, isConsequential) {

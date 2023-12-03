@@ -108,7 +108,11 @@ def update_toggle_settings():
     logging.info("200 OK: Received request to update toggles")
 
     # Fetch the cookie ID from query parameters
-    cookie_id = request.args.get('user_id')
+    # cookie_id = request.args.get('user_id')
+
+    data = request.get_json()
+    logging.info(f"Received data: {data}")
+    cookie_id = data.get('cookie_id')
 
     user = get_or_create_user(cookie_id) # Get or create the user  
     if not user:
@@ -116,7 +120,6 @@ def update_toggle_settings():
         return jsonify({"status": "failure", 'message': 'User not found'}), 404
     
     # Fetch the random and consequential fields from the request
-    data = request.get_json()
     is_random = data.get('random')
     is_consequential = data.get('consequential')
 
