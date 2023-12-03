@@ -133,14 +133,10 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
 
     try:
         # API call to GPT-4 (assuming you have a function or method for this)
-        response = call_gpt4_api(full_prompt)
-
         generated_text, status_code = call_gpt4_api(full_prompt)
         if status_code != 200:
             return jsonify({"status": "failure", "message": "Error in GPT-4 API call"}), status_code
 
-        parsed_response = parse_gpt4_response(generated_text)
-        
         # Parsing logic (assuming you have a function or method for this)
         parsed_response = parse_gpt4_response(generated_text)
         # parsed_response = parse_gpt4_response(response)
