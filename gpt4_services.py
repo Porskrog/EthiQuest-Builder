@@ -4,7 +4,7 @@ import time
 from random import choice
 from flask import jsonify
 from dilemma_services import get_last_dilemma_and_option
-import openai
+from openai import OpenAI
 
 HTTP_OK = 200
 HTTP_BAD_REQUEST = 400
@@ -16,15 +16,15 @@ HTTP_CREATED = 201
 logging.basicConfig(level=logging.INFO)
 
 # Initialize OpenAI API
-api_key = os.environ.get('OPENAI_API_KEY')
-openai.api_key = api_key
-
+client = OpenAI(
+    api_key=os.environ.get('OPENAI_API_KEY'),
+)
 
 def call_gpt4_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
-        response = openai.ChatCompletion.create(
+        response = openai.Completion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a leadership dilemma generator."},
