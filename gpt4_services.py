@@ -22,7 +22,7 @@ def call_gpt4_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
-        completion = client.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a leadership dilemma generator."},
@@ -32,7 +32,9 @@ def call_gpt4_api(full_prompt):
         )
         # Process the response
         # generated_text = completion.choices[0].text
-        generated_text = completion.choices[0].text
+        generated_text = response.choices[0].message.content
+        print(f"Generated text: {generated_text}")
+        
         # Calculate and log the duration
         duration = time.time() - start_time
         logging.info(f"GPT-4 API call took {duration} seconds.")
