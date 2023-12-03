@@ -24,15 +24,22 @@ def call_gpt4_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
-        response = client.Completion.create(
+        completion = client.Completion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a leadership dilemma generator."},
                 {"role": "user", "content": full_prompt}
             ],
-            max_tokens=250
+            max_tokens=250,
+            response_format={"type": "json_object"}  # Specify response format
         )
-        generated_text = response.choices[0].text
+        # Process the response
+        generated_text = completion.choices[0].text
+
+        print(completion.choices[0].text)
+        print(dict(completion).get('usage'))
+        print(completion.model_dump_json(indent=2))
+
         # Record the time after the API call
         end_time = time.time()
         # Calculate and log the duration
