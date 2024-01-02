@@ -3,7 +3,7 @@ import os
 import time
 from random import choice
 from flask import jsonify
-from dilemma_services import get_last_dilemma_and_option, get_project_context
+from dilemma_services import get_last_dilemma_and_option
 from openai import OpenAI
 
 HTTP_OK = 200
