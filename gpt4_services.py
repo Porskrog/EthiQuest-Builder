@@ -3,7 +3,7 @@ import os
 import time
 from random import choice
 from flask import jsonify
-from dilemma_services import get_last_dilemma_and_option
+from dilemma_services import get_last_dilemma_and_option, get_project_context
 from openai import OpenAI
 
 HTTP_OK = 200
@@ -18,7 +18,11 @@ logging.basicConfig(level=logging.INFO)
 # Initialize OpenAI API
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-def call_gpt4_api(full_prompt):
+######################################################################################################
+# Utility Functions - getting dilemmas and options for user from GPT-4                               #
+######################################################################################################
+
+def call_gpt4_dilemma_api(full_prompt):
     try:
         # Record the time before the API call
         start_time = time.time()
@@ -47,7 +51,7 @@ def call_gpt4_api(full_prompt):
     # return generated_text
     return generated_text, 200  # Return the generated text and a success status code
 
-def parse_gpt4_response(generated_text):
+def parse_gpt4_dilemma_response(generated_text):
     # Parsing logic to extract the dilemma, options, pros, and cons from the generated_text
     try:
         # Split the generated text into lines
@@ -90,7 +94,6 @@ def parse_gpt4_response(generated_text):
     logging.info(f"200 OK: Successfully parsed the dilemma from GPT-4 as dilemma and options. Dilemma: {dilemma}, Options: {options}")
     return dilemma, options
 
-
 def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=None):
     if last_dilemma is None or last_option is None:
         if user_id is None:
@@ -131,13 +134,13 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
 
     try:
         # API call to GPT-4 (assuming you have a function or method for this)
-        generated_text, status_code = call_gpt4_api(full_prompt)
+        generated_text, status_code = call_gpt4_dilemma_api(full_prompt)
         if status_code != 200:
             return jsonify({"status": "failure", "message": "Error in GPT-4 API call"}), status_code
 
         # Parsing logic (assuming you have a function or method for this)
-        parsed_response = parse_gpt4_response(generated_text)
-        # parsed_response = parse_gpt4_response(response)
+        parsed_response = parse_gpt4_dilemma_response(generated_text)
+        # parsed_response = parse_gpt4_dilemma_response(response)
 
         # Return the parsed response        
         logging.info(f"200 OK: Successfully generated a new dilemma with GPT-4: {parsed_response}")
@@ -146,3 +149,87 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
         logging.exception(f"An error occurred: {e}")
         return None
 
+#######################################################################################################
+# Utility Functions - getting contexts for user from GPT-4                                            #
+#######################################################################################################
+
+def call_gpt4_context_api(full_prompt):
+    try:
+        # Record the time before the API call
+        start_time = time.time()
+        response = client.completions.create(
+            engine="davinci",
+            prompt=full_prompt,
+            max_tokens=250
+        )
+        # Process the response
+        generated_text = response.choices[0].text
+        
+        # Calculate and log the duration
+        duration = time.time() - start_time
+        logging.info(f"GPT-4 API call took {duration} seconds.")
+        logging.info(f"Generated text: {generated_text}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None, 500
+    
+    logging.info(f"200 OK: Successfully called GPT-4 API.")
+    # return generated_text
+    return generated_text, 200  # Return the generated text and a success status code
+
+def parse_gpt4_context_response(generated_text):
+    # Parsing logic to extract the context from the generated_text
+    try:
+        # Split the generated text into lines
+        lines = generated_text.split("\n")
+
+        # Initialize empty dictionaries to hold the parsed information
+        context = {}
+
+        # Loop over the lines and parse them
+        for line in lines:
+            if line.startswith("Context:"):
+                context['Context'] = line.split("Context:", 1)[1].strip()
+
+        # Validate that we have all the necessary components
+        if 'Context' not in context:
+            raise Exception("Missing context in the generated text.")
+
+        # Now you can use `context` as needed
+    except Exception as e:
+        logging.exception(f"Error while parsing the generated text: {e}")
+        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
+
+    logging.info(f"200 OK: Successfully parsed the context from GPT-4 as context. Context: {context}")
+    return context
+
+def generate_new_context_with_gpt4():
+    # Generate the prompt for GPT-4
+    base_prompt = "Please generate a context for an ethical and leadership dilemma related to program management. The context should be related to the following characteristics: Public Sector, Private Sector, Fixed Price, Variable Costs, Fixed Scope, Waterfall, Agile, etc."
+    full_prompt = base_prompt
+    
+    # Add the standard format to the prompt
+    full_prompt += """
+    Format the context as follows:
+    Context: {Comma separated important context characteristics as for example Public Sector, Private Sector, Fixed Price, Variable Costs, Fixed Scope, Waterfall, Agile, etc., max 10 words}
+    """
+
+    logging.info(f"200 OK: Calling GPT-4 API to generate new context. Prompt: {full_prompt}")
+    # API call to GPT-4 to generate the new context
+
+    try:
+        # API call to GPT-4 (assuming you have a function or method for this)
+        generated_text, status_code = call_gpt4_context_api(full_prompt)
+        if status_code != 200:
+            return jsonify({"status": "failure", "message": "Error in GPT-4 API call"}), status_code
+
+        # Parsing logic (assuming you have a function or method for this)
+        parsed_response = parse_gpt4_context_response(generated_text)
+        # parsed_response = parse_gpt4_context_response(response)
+
+        # Return the parsed response        
+        logging.info(f"200 OK: Successfully generated a new context with GPT-4: {parsed_response}")
+        return parsed_response
+    except Exception as e:
+        logging.exception(f"An error occurred: {e}")
+        return None

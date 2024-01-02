@@ -5,7 +5,7 @@ from extensions import db
 from flask_cors import CORS
 from random import choice
 from app import limiter, cache  
-from gpt4_services import generate_new_dilemma_with_gpt4, call_gpt4_api, parse_gpt4_response
+from gpt4_services import generate_new_dilemma_with_gpt4, call_gpt4_dilemma_api, parse_gpt4_dilemma_response, generate_new_context_with_gpt4, call_gpt4_context_api, parse_gpt4_context_response
 from dilemma_services import fetch_random_dilemma, prepare_dilemma_json_response, add_new_dilemma_and_options_to_db, mark_dilemma_as_viewed, get_last_dilemma_and_option, fetch_related_options, fetch_consequential_dilemma, fetch_unviewed_dilemmas, fetch_or_generate_consequential_dilemmas, add_option_dilemma_relation
 import os
 import json
@@ -22,7 +22,7 @@ HTTP_CREATED = 201
 logging.basicConfig(level=logging.INFO)  # Sets up basic logging
 
 customer_bp = Blueprint('customer', __name__)
-CORS(customer_bp, origins=["https://flow.camp"])
+CORS(customer_bp, origins=["https://ethiquest.ai"])
 
 
 ######################################################################################################
@@ -188,7 +188,7 @@ def get_dilemma():
     is_random = True if is_random == "True" else False
     is_consequential = True if is_consequential == "True" else False
 
-    # Fetch tfhe last dilemma and option chosen by this user from the database
+    # Fetch the last dilemma and option chosen by this user from the database
     last_dilemma, last_option = get_last_dilemma_and_option(user_id)
     logging.info(f"200 OK: Successfully fetched the last dilemma and option for user {user_id}. Last dilemma: {last_dilemma}, Last option: {last_option}")
 
@@ -331,9 +331,9 @@ def store_user_choice():
 
     return jsonify({"status": "success", 'message': 'User choice stored successfully'}), 200
 
-#####################################################################
-#   Get Options                                                     # 
-#####################################################################
+######################################################################################################
+#   Get Options                                                                                      # 
+######################################################################################################
 
 @customer_bp.route('/get_options/<DilemmaID>', methods=['GET'])
 def get_options(DilemmaID):
@@ -350,6 +350,49 @@ def get_options(DilemmaID):
 
     return jsonify({'options': output})
 
+######################################################################################################
+#   Get Project Context                                                                              #
+######################################################################################################
+
+@customer_bp.route('/get_project_context', methods=['POST'])
+def get_project_context():
+    data = request.get_json()
+    logging.info(f"Received data: {data}")
+    cookie_id = data.get('cookie_id', None)
+    user_id = data.get('user_id', None)
+    project_id = data.get('project_id', None)
+    logging.info(f"Get project context called with user id: {user_id}, project id: {project_id}")
+
+    if not cookie_id:
+        logging.error("Missing cookie_id in the request")
+        return jsonify({"status": "failure", 'message': 'Missing cookie_id'}), 400
+
+    user = get_or_create_user(cookie_id) # Get or create the user
+    if not user:
+        logging.error("404 Not Found: User could not be created")
+        return jsonify({"status": "failure", 'message': 'User not found'}), 404
+    
+    # Fetch the project context from the database
+    project_context = ContextCharacteristic.query.join(DilemmasContextCharacteristic).filter(DilemmasContextCharacteristic.DilemmaID == project_id).all()
+    logging.info(f"200 OK: Successfully fetched the project context for user {user_id}.")
+    logging.info(f"200 OK: The project context: {project_context}")
+    
+    try:
+        # If there is no project context, create a new project context
+        if project_context is None:
+            try:
+                selected_project_context = generate_new_context_with_gpt4()
+                logging.info(f"200 OK: Successfully fetched a project context for the user with user id: {user_id}.")
+            except Exception as e:
+                logging.error(f"Database error: {e}")
+                return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
+        else:
+            logging.info(f"200 OK: Project context is {project_context}")
+    except Exception as e:
+        logging.error(f"Database error: {e}")
+        return jsonify({"status": "failure", "message": "Internal Server Error"}), 500
+    
+    return jsonify({'project_context': project_context})
 
 
 if __name__ == '__main__':
