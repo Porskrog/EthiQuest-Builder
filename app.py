@@ -15,9 +15,16 @@ cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, origins=["https://ethiquest.ai"])
+    # CORS(app, origins=["https://ethiquest.ai"])
+    # CORS(app, resources={r"/customer/*": {"origins": "https://ethiquest.ai"}})
 
-    CORS(app, resources={r"/customer/*": {"origins": "https://ethiquest.ai"}})
+    # Define allowed origins including both your production domain and any development/testing origins
+    origins_allowed = ["https://ethiquest.ai", "http://localhost:8080", "http://localhost:*", "https://*.flutterflow.io"]
+    # Apply CORS configuration to all routes with the specified list of origins
+    CORS(app, supports_credentials=True, origins=origins_allowed)
+    # Your additional setup continues here...
+
+
     limiter.init_app(app)
     cache.init_app(app)
 
