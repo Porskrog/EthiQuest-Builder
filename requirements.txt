@@ -7,3 +7,4 @@ Flask-Migrate
 openai
 Flask-Limiter
 Flask-Caching
+redis

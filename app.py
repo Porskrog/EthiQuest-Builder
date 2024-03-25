@@ -5,13 +5,13 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from extensions import db
 from flask_caching import Cache
+from redis import Redis
 import logging
 import os
 
 # Initialize Limiter and Cache
 limiter = Limiter(key_func=get_remote_address)
 cache = Cache(config={'CACHE_TYPE': 'simple'})
-
 
 def create_app():
     app = Flask(__name__)
@@ -24,8 +24,11 @@ def create_app():
     CORS(app, supports_credentials=True, origins=origins_allowed)
     # Your additional setup continues here...
 
+    # Flask-Limiter setup with Redis
+    redis_uri = os.getenv("REDIS_URI", "redis://localhost:6379")
+    limiter.init_app(app, storage_uri=redis_uri)
 
-    limiter.init_app(app)
+    # limiter.init_app(app)  Takin this out for now
     cache.init_app(app)
 
     # Configuration
