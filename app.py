@@ -10,7 +10,10 @@ import logging
 import os
 
 # Initialize Limiter and Cache
-limiter = Limiter(key_func=get_remote_address)
+# First, adjust the Limiter creation to include the storage_uri
+redis_uri = os.getenv("REDIS_URI", "redis://localhost:6379")
+limiter = Limiter(key_func=get_remote_address, storage_uri=redis_uri)
+# limiter = Limiter(key_func=get_remote_address)    # Taking this out for now
 cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 def create_app():
@@ -24,11 +27,7 @@ def create_app():
     CORS(app, supports_credentials=True, origins=origins_allowed)
     # Your additional setup continues here...
 
-    # Flask-Limiter setup with Redis
-    redis_uri = os.getenv("REDIS_URI", "redis://localhost:6379")
-    limiter.init_app(app, storage_uri=redis_uri)
-
-    # limiter.init_app(app)  Takin this out for now
+    limiter.init_app(app)  # Initialize Limiter
     cache.init_app(app)
 
     # Configuration
