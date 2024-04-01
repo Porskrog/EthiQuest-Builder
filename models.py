@@ -39,7 +39,6 @@ class Project(db.Model):
     # Project Risk Relations
     project_risk_relations = db.relationship('Risks', backref='project', lazy=True)
 
-
 # ProjectStakeholders table
 class ProjectStakeholder(db.Model):
     __tablename__ = 'ProjectStakeholders'
@@ -61,7 +60,6 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     Name = db.Column(db.String(255), nullable=False)
     Notes = db.Column(db.Text)
-
 
 # ProjectRisks table
 class Risks(db.Model):
@@ -91,7 +89,6 @@ class UserProjectRelation(db.Model):
     UserProjectRelationID = db.Column(db.Integer, primary_key=True)
     ProjectID = db.Column(db.Integer, db.ForeignKey('Projects.id'))
     UserID = db.Column(db.Integer, db.ForeignKey('Users.id'))
-
 
 # Dilemmas table
 class Dilemma(db.Model):
@@ -196,6 +193,5 @@ class ViewedDilemma(db.Model):
     user = db.relationship('User', back_populates='viewed_dilemmas')
     # Relationship to Dilemmas
     dilemma = db.relationship('Dilemma')
-
 
 # End of Database tables

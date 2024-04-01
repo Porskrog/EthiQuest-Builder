@@ -1,0 +1,12 @@
+<!-- Section to get a random dilemma -->
+<section id="randomDilemmaSection">
+    <h2>Get a Random Dilemma</h2>
+    <button id="getRandomDilemmaButton">GET DILEMMA</button>
+    <div id="randomDilemmaDisplay"></div>
+</section>
+
+<!-- Section to display option details -->
+<section id="optionDetailsSection">
+    <h2>Option Details</h2>
+    <div id="optionDetailsDisplay"></div>
+</section>

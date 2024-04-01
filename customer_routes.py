@@ -138,7 +138,6 @@ def update_toggle_settings():
         db.session.rollback()
         return jsonify({"status": "failure", 'message': 'Database commit failed'}), 500
 
-
 ######################################################################################################
 #  3. Get Unviewed Dilemmas                                                                          #
 ######################################################################################################
