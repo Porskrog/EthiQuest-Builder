@@ -31,12 +31,6 @@ CORS(customer_bp, origins=["https://ethiquest.ai"])
 #                                                                                                    #
 ######################################################################################################
 
-
-# @customer_bp.route('/get_data')
-# def get_customer_data():
-#    return jsonify({"data": "customer data"})
-
-
 # Function to get or create a user
 def get_or_create_user(cookie_id):
     try:
