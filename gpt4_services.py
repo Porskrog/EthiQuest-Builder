@@ -6,7 +6,6 @@ from flask import jsonify
 from dilemma_services import get_last_dilemma_and_option
 from openai import OpenAI
 from typing_extensions import override
-from openai import AssistantEventHandler
 
 HTTP_OK = 200
 HTTP_BAD_REQUEST = 400
@@ -157,65 +156,6 @@ def generate_new_dilemma_with_gpt4(last_dilemma=None, last_option=None, user_id=
 
 def call_gpt4_context_api(full_prompt):
     try:
-        # Create an Assistant instance
-        # assistant = OpenAI(api_key=os
-        # .getenv('OPENAI_API_KEY'))
-        
-        assistant = client.beta.assistants.create(
-            name="Math Tutor",
-            instructions="You are a personal math tutor. Write and run code to answer math questions.",
-            tools=[{"type": "code_interpreter"}],
-            model="gpt-4-turbo-preview",
-        )
-        
-        thread = client.beta.threads.create()
-        
-        message = client.beta.threads.messages.create(
-           thread_id=thread.id,
-            role="user",
-            content="I need to solve the equation `3x + 11 = 14`. Can you help me?"
-        )
-        
-        # First, we create a EventHandler class to define
-        # how we want to handle the events in the response stream.
-        
-        class EventHandler(AssistantEventHandler):    
-        @override
-            def on_text_created(self, text) -> None:
-                print(f"\nassistant > ", end="", flush=True)
-                
-            @override
-            def on_text_delta(self, delta, snapshot):
-                print(delta.value, end="", flush=True)
-                
-            def on_tool_call_created(self, tool_call):
-                print(f"\nassistant > {tool_call.type}\n", flush=True)
-            
-            def on_tool_call_delta(self, delta, snapshot):
-                if delta.type == 'code_interpreter':
-                if delta.code_interpreter.input:
-                    print(delta.code_interpreter.input, end="", flush=True)
-                if delta.code_interpreter.outputs:
-                    print(f"\n\noutput >", flush=True)
-                    for output in delta.code_interpreter.outputs:
-                    if output.type == "logs":
-                        print(f"\n{output.logs}", flush=True)
-        
-        # Then, we use the `create_and_stream` SDK helper 
-        # with the `EventHandler` class to create the Run 
-        # and stream the response.
-        
-        with client.beta.threads.runs.stream(
-        thread_id=thread.id,
-        assistant_id=assistant.id,
-        instructions="Please address the user as Jane Doe. The user has a premium account.",
-        event_handler=EventHandler(),
-        ) as stream:
-        stream.until_done()
-    
-    
-    
-    def on_tool_call_response(self, response, snapshot):        
         # Record the time before the API call
         start_time = time.time()
         response = client.chat.completions.create(
@@ -294,3 +234,107 @@ def generate_new_context_with_gpt4():
     except Exception as e:
         logging.exception(f"An error occurred: {e}")
         return None
+    
+
+#######################################################################################################
+# Utility Functions - New Game Assistant Calls                                                        #
+#######################################################################################################
+class EthiQuestGame:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        client.api_key = api_key
+        self.assistant_id = None  # Set your assistant ID after creation
+        self.thread_id = None  # This will hold the ID of the conversation thread
+
+    def start_new_thread(self):
+        """
+        Start a new conversation thread with OpenAI Assistant to maintain context throughout the game.
+        """
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are assisting in generating engaging project dilemmas."}
+            ]
+        )
+        self.thread_id = response['data']['id']
+
+    def get_project_dilemma(self, project_details):
+        """
+        Generate a project dilemma based on the provided project details using the established thread.
+        """
+        if not self.thread_id:
+            self.start_new_thread()
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "user", "content": f"Generate a project dilemma that involves a critical project decision, providing 2-3 options with implications for the stakeholders based on: {project_details}"}
+            ],
+            thread_id=self.thread_id
+        )
+        dilemma = response.choices[0].message['content']
+        return dilemma
+            
+    def get_project_narrative(self, project_details):
+        """
+        Generate the initial project narrative based on provided details using the established thread.
+        """
+        if not self.thread_id:
+            self.start_new_thread()
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "user", "content": f"Generate a project narrative based on: {project_details}"}
+            ],
+            thread_id=self.thread_id
+        )
+        narrative = response.choices[0].message['content']
+        return narrative
+
+    def get_project_overview(self):
+        """
+        Compile and return an overview of the project narrative, current state, and the evolution based on the game's history.
+        """
+        # Assuming the game state includes narrative history, decisions made, and their impacts.
+        overview = "Project Overview:\n"
+        overview += f"Initial Narrative: {self.game_state['current_project']}\n\n"
+        overview += "Evolution:\n"
+        for idx, dilemma in enumerate(self.game_state["previous_dilemmas"], start=1):
+            decision = self.game_state["player_decisions"][idx-1] if idx <= len(self.game_state["player_decisions"]) else "Pending"
+            overview += f"Dilemma {idx}: {dilemma}\nDecision: {decision}\n\n"
+        return overview
+    
+    def update_stakeholders(self, stakeholder_update_info):
+        """
+        Update stakeholder information based on the latest game developments using the established thread.
+        """
+        if not self.thread_id:
+            self.start_new_thread()
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "user", "content": f"Update stakeholders based on: {stakeholder_update_info}"}
+            ],
+            thread_id=self.thread_id
+        )
+        updated_info = response.choices[0].message['content']
+        return updated_info
+    
+    def get_stakeholder_insights(self, question):
+        """
+        Generate insights about stakeholders based on the player's question, using the existing thread for context.
+        """
+        if not self.thread_id:
+            self.start_new_thread()
+        
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "user", "content": question}
+            ],
+            thread_id=self.thread_id
+        )
+        insights = response.choices[0].message['content']
+        return insights

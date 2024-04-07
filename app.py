@@ -41,7 +41,7 @@ def create_app():
     from admin_routes import admin_bp  # Import your admin Blueprint
     app.register_blueprint(customer_bp, url_prefix='/customer')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    
+        
     return app
 
 app = create_app()
