@@ -9,7 +9,7 @@ from gpt4_services import generate_new_dilemma_with_gpt4, call_gpt4_dilemma_api,
 from dilemma_services import fetch_random_dilemma, prepare_dilemma_json_response, add_new_dilemma_and_options_to_db, mark_dilemma_as_viewed, get_last_dilemma_and_option, fetch_related_options, fetch_consequential_dilemma, fetch_unviewed_dilemmas, fetch_or_generate_consequential_dilemmas, add_option_dilemma_relation
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from assistant_functions import EthiQuestGame
+from gpt4_services import EthiQuestGame
 import os
 import json
 import time
@@ -400,7 +400,7 @@ def get_project_context():
 
 @customer_bp.route('/generate_dilemma', methods=['GET'])
 def generate_dilemma():
-    dilemma = game.generate_dilemma()
+    dilemma = EthiQuestGame.generate_project_dilemma()
     return jsonify({"dilemma": dilemma})
 
 ######################################################################################################
@@ -410,7 +410,7 @@ def generate_dilemma():
 @customer_bp.route('/get_stakeholder_insights', methods=['POST'])
 def get_stakeholder_insights():
     question = request.json.get("question")
-    insights = game.get_stakeholder_insights(question)
+    insights = EthiQuestGame.get_stakeholder_insights(question)
     return jsonify({"insights": insights})
 
 ######################################################################################################
@@ -419,7 +419,7 @@ def get_stakeholder_insights():
 
 @customer_bp.route('/get_project_overview', methods=['GET'])
 def get_project_overview():
-    overview = game.get_project_overview()
+    overview = EthiQuestGame.get_project_overview()
     return jsonify({"overview": overview})
 
 

@@ -258,7 +258,7 @@ class EthiQuestGame:
         )
         self.thread_id = response['data']['id']
 
-    def get_project_dilemma(self, project_details):
+    def generate_project_dilemma(self, project_details):
         """
         Generate a project dilemma based on the provided project details using the established thread.
         """
